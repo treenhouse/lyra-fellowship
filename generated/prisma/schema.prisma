@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  basesOwned     Base[]       @relation("BaseOwner")
+  memberships    BaseMember[]
+  recordsCreated Record[]
+}
+
+model Base {
+  id        String   @id @default(uuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  owner User @relation("BaseOwner", fields: [ownerId], references: [id])
+
+  tables  Table[]
+  members BaseMember[]
+}
+
+model BaseMember {
+  baseId String
+  userId String
+
+  base Base @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([baseId, userId])
+}
+
+model Table {
+  id        String   @id @default(uuid())
+  baseId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  base Base @relation(fields: [baseId], references: [id], onDelete: Cascade)
+
+  fields  Field[]
+  records Record[]
+  views   View[]
+}
+
+enum FieldType {
+  text
+  number
+}
+
+model Field {
+  id       String    @id @default(uuid())
+  tableId  String
+  name     String
+  type     FieldType
+  position Int?
+
+  table Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  cells       CellValue[]
+  viewFilters ViewFilter[]
+  viewSorts   ViewSort[]
+
+  @@unique([tableId, name])
+}
+
+model Record {
+  id        String   @id @default(uuid())
+  tableId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  table Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  cells  CellValue[]
+  user   User?       @relation(fields: [userId], references: [id])
+  userId String?
+}
+
+model CellValue {
+  recordId String
+  fieldId  String
+  value    Json?
+
+  record Record @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  field  Field  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@id([recordId, fieldId])
+  @@index([fieldId])
+  @@index([recordId])
+}
+
+model View {
+  id        String   @id @default(uuid())
+  tableId   String
+  name      String
+  createdAt DateTime @default(now())
+
+  table Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  filters ViewFilter[]
+  sorts   ViewSort[]
+}
+
+model ViewFilter {
+  id      String  @id @default(uuid())
+  viewId  String
+  fieldId String?
+  value   Json?
+
+  view  View   @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  field Field? @relation(fields: [fieldId], references: [id])
+}
+
+model ViewSort {
+  id        String        @id @default(uuid())
+  viewId    String
+  fieldId   String
+  direction SortDirection
+
+  view  View  @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  field Field @relation(fields: [fieldId], references: [id])
+}
+
+enum SortDirection {
+  asc
+  desc
+}
