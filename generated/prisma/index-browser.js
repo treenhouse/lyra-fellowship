@@ -144,7 +144,9 @@ exports.Prisma.TableScalarFieldEnum = {
   id: 'id',
   baseId: 'baseId',
   name: 'name',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdById: 'createdById'
 };
 
 exports.Prisma.FieldScalarFieldEnum = {
@@ -160,6 +162,7 @@ exports.Prisma.RecordScalarFieldEnum = {
   tableId: 'tableId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  position: 'position',
   userId: 'userId'
 };
 
@@ -187,7 +190,8 @@ exports.Prisma.ViewSortScalarFieldEnum = {
   id: 'id',
   viewId: 'viewId',
   fieldId: 'fieldId',
-  direction: 'direction'
+  direction: 'direction',
+  order: 'order'
 };
 
 exports.Prisma.SortOrder = {

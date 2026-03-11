@@ -1712,12 +1712,14 @@ export namespace Prisma {
     basesOwned: number
     memberships: number
     recordsCreated: number
+    tables: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     basesOwned?: boolean | UserCountOutputTypeCountBasesOwnedArgs
     memberships?: boolean | UserCountOutputTypeCountMembershipsArgs
     recordsCreated?: boolean | UserCountOutputTypeCountRecordsCreatedArgs
+    tables?: boolean | UserCountOutputTypeCountTablesArgs
   }
 
   // Custom InputTypes
@@ -1750,6 +1752,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountRecordsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RecordWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountTablesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TableWhereInput
   }
 
 
@@ -2125,6 +2134,7 @@ export namespace Prisma {
     basesOwned?: boolean | User$basesOwnedArgs<ExtArgs>
     memberships?: boolean | User$membershipsArgs<ExtArgs>
     recordsCreated?: boolean | User$recordsCreatedArgs<ExtArgs>
+    tables?: boolean | User$tablesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2154,6 +2164,7 @@ export namespace Prisma {
     basesOwned?: boolean | User$basesOwnedArgs<ExtArgs>
     memberships?: boolean | User$membershipsArgs<ExtArgs>
     recordsCreated?: boolean | User$recordsCreatedArgs<ExtArgs>
+    tables?: boolean | User$tablesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2165,6 +2176,7 @@ export namespace Prisma {
       basesOwned: Prisma.$BasePayload<ExtArgs>[]
       memberships: Prisma.$BaseMemberPayload<ExtArgs>[]
       recordsCreated: Prisma.$RecordPayload<ExtArgs>[]
+      tables: Prisma.$TablePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2568,6 +2580,7 @@ export namespace Prisma {
     basesOwned<T extends User$basesOwnedArgs<ExtArgs> = {}>(args?: Subset<T, User$basesOwnedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     memberships<T extends User$membershipsArgs<ExtArgs> = {}>(args?: Subset<T, User$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BaseMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     recordsCreated<T extends User$recordsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$recordsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tables<T extends User$tablesArgs<ExtArgs> = {}>(args?: Subset<T, User$tablesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TablePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3058,6 +3071,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: RecordScalarFieldEnum | RecordScalarFieldEnum[]
+  }
+
+  /**
+   * User.tables
+   */
+  export type User$tablesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Table
+     */
+    select?: TableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Table
+     */
+    omit?: TableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TableInclude<ExtArgs> | null
+    where?: TableWhereInput
+    orderBy?: TableOrderByWithRelationInput | TableOrderByWithRelationInput[]
+    cursor?: TableWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TableScalarFieldEnum | TableScalarFieldEnum[]
   }
 
   /**
@@ -5224,6 +5261,8 @@ export namespace Prisma {
     baseId: string | null
     name: string | null
     createdAt: Date | null
+    updatedAt: Date | null
+    createdById: string | null
   }
 
   export type TableMaxAggregateOutputType = {
@@ -5231,6 +5270,8 @@ export namespace Prisma {
     baseId: string | null
     name: string | null
     createdAt: Date | null
+    updatedAt: Date | null
+    createdById: string | null
   }
 
   export type TableCountAggregateOutputType = {
@@ -5238,6 +5279,8 @@ export namespace Prisma {
     baseId: number
     name: number
     createdAt: number
+    updatedAt: number
+    createdById: number
     _all: number
   }
 
@@ -5247,6 +5290,8 @@ export namespace Prisma {
     baseId?: true
     name?: true
     createdAt?: true
+    updatedAt?: true
+    createdById?: true
   }
 
   export type TableMaxAggregateInputType = {
@@ -5254,6 +5299,8 @@ export namespace Prisma {
     baseId?: true
     name?: true
     createdAt?: true
+    updatedAt?: true
+    createdById?: true
   }
 
   export type TableCountAggregateInputType = {
@@ -5261,6 +5308,8 @@ export namespace Prisma {
     baseId?: true
     name?: true
     createdAt?: true
+    updatedAt?: true
+    createdById?: true
     _all?: true
   }
 
@@ -5341,6 +5390,8 @@ export namespace Prisma {
     baseId: string
     name: string
     createdAt: Date
+    updatedAt: Date
+    createdById: string | null
     _count: TableCountAggregateOutputType | null
     _min: TableMinAggregateOutputType | null
     _max: TableMaxAggregateOutputType | null
@@ -5365,7 +5416,10 @@ export namespace Prisma {
     baseId?: boolean
     name?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
+    createdById?: boolean
     base?: boolean | BaseDefaultArgs<ExtArgs>
+    creator?: boolean | Table$creatorArgs<ExtArgs>
     fields?: boolean | Table$fieldsArgs<ExtArgs>
     records?: boolean | Table$recordsArgs<ExtArgs>
     views?: boolean | Table$viewsArgs<ExtArgs>
@@ -5377,7 +5431,10 @@ export namespace Prisma {
     baseId?: boolean
     name?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
+    createdById?: boolean
     base?: boolean | BaseDefaultArgs<ExtArgs>
+    creator?: boolean | Table$creatorArgs<ExtArgs>
   }, ExtArgs["result"]["table"]>
 
   export type TableSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -5385,7 +5442,10 @@ export namespace Prisma {
     baseId?: boolean
     name?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
+    createdById?: boolean
     base?: boolean | BaseDefaultArgs<ExtArgs>
+    creator?: boolean | Table$creatorArgs<ExtArgs>
   }, ExtArgs["result"]["table"]>
 
   export type TableSelectScalar = {
@@ -5393,11 +5453,14 @@ export namespace Prisma {
     baseId?: boolean
     name?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
+    createdById?: boolean
   }
 
-  export type TableOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "baseId" | "name" | "createdAt", ExtArgs["result"]["table"]>
+  export type TableOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "baseId" | "name" | "createdAt" | "updatedAt" | "createdById", ExtArgs["result"]["table"]>
   export type TableInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     base?: boolean | BaseDefaultArgs<ExtArgs>
+    creator?: boolean | Table$creatorArgs<ExtArgs>
     fields?: boolean | Table$fieldsArgs<ExtArgs>
     records?: boolean | Table$recordsArgs<ExtArgs>
     views?: boolean | Table$viewsArgs<ExtArgs>
@@ -5405,15 +5468,18 @@ export namespace Prisma {
   }
   export type TableIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     base?: boolean | BaseDefaultArgs<ExtArgs>
+    creator?: boolean | Table$creatorArgs<ExtArgs>
   }
   export type TableIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     base?: boolean | BaseDefaultArgs<ExtArgs>
+    creator?: boolean | Table$creatorArgs<ExtArgs>
   }
 
   export type $TablePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Table"
     objects: {
       base: Prisma.$BasePayload<ExtArgs>
+      creator: Prisma.$UserPayload<ExtArgs> | null
       fields: Prisma.$FieldPayload<ExtArgs>[]
       records: Prisma.$RecordPayload<ExtArgs>[]
       views: Prisma.$ViewPayload<ExtArgs>[]
@@ -5423,6 +5489,8 @@ export namespace Prisma {
       baseId: string
       name: string
       createdAt: Date
+      updatedAt: Date
+      createdById: string | null
     }, ExtArgs["result"]["table"]>
     composites: {}
   }
@@ -5818,6 +5886,7 @@ export namespace Prisma {
   export interface Prisma__TableClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     base<T extends BaseDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BaseDefaultArgs<ExtArgs>>): Prisma__BaseClient<$Result.GetResult<Prisma.$BasePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    creator<T extends Table$creatorArgs<ExtArgs> = {}>(args?: Subset<T, Table$creatorArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     fields<T extends Table$fieldsArgs<ExtArgs> = {}>(args?: Subset<T, Table$fieldsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FieldPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     records<T extends Table$recordsArgs<ExtArgs> = {}>(args?: Subset<T, Table$recordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     views<T extends Table$viewsArgs<ExtArgs> = {}>(args?: Subset<T, Table$viewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -5854,6 +5923,8 @@ export namespace Prisma {
     readonly baseId: FieldRef<"Table", 'String'>
     readonly name: FieldRef<"Table", 'String'>
     readonly createdAt: FieldRef<"Table", 'DateTime'>
+    readonly updatedAt: FieldRef<"Table", 'DateTime'>
+    readonly createdById: FieldRef<"Table", 'String'>
   }
     
 
@@ -6247,6 +6318,25 @@ export namespace Prisma {
      * Limit how many Tables to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Table.creator
+   */
+  export type Table$creatorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -7524,8 +7614,18 @@ export namespace Prisma {
 
   export type AggregateRecord = {
     _count: RecordCountAggregateOutputType | null
+    _avg: RecordAvgAggregateOutputType | null
+    _sum: RecordSumAggregateOutputType | null
     _min: RecordMinAggregateOutputType | null
     _max: RecordMaxAggregateOutputType | null
+  }
+
+  export type RecordAvgAggregateOutputType = {
+    position: number | null
+  }
+
+  export type RecordSumAggregateOutputType = {
+    position: number | null
   }
 
   export type RecordMinAggregateOutputType = {
@@ -7533,6 +7633,7 @@ export namespace Prisma {
     tableId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    position: number | null
     userId: string | null
   }
 
@@ -7541,6 +7642,7 @@ export namespace Prisma {
     tableId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    position: number | null
     userId: string | null
   }
 
@@ -7549,16 +7651,26 @@ export namespace Prisma {
     tableId: number
     createdAt: number
     updatedAt: number
+    position: number
     userId: number
     _all: number
   }
 
+
+  export type RecordAvgAggregateInputType = {
+    position?: true
+  }
+
+  export type RecordSumAggregateInputType = {
+    position?: true
+  }
 
   export type RecordMinAggregateInputType = {
     id?: true
     tableId?: true
     createdAt?: true
     updatedAt?: true
+    position?: true
     userId?: true
   }
 
@@ -7567,6 +7679,7 @@ export namespace Prisma {
     tableId?: true
     createdAt?: true
     updatedAt?: true
+    position?: true
     userId?: true
   }
 
@@ -7575,6 +7688,7 @@ export namespace Prisma {
     tableId?: true
     createdAt?: true
     updatedAt?: true
+    position?: true
     userId?: true
     _all?: true
   }
@@ -7617,6 +7731,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: RecordAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RecordSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: RecordMinAggregateInputType
@@ -7647,6 +7773,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: RecordCountAggregateInputType | true
+    _avg?: RecordAvgAggregateInputType
+    _sum?: RecordSumAggregateInputType
     _min?: RecordMinAggregateInputType
     _max?: RecordMaxAggregateInputType
   }
@@ -7656,8 +7784,11 @@ export namespace Prisma {
     tableId: string
     createdAt: Date
     updatedAt: Date
+    position: number | null
     userId: string | null
     _count: RecordCountAggregateOutputType | null
+    _avg: RecordAvgAggregateOutputType | null
+    _sum: RecordSumAggregateOutputType | null
     _min: RecordMinAggregateOutputType | null
     _max: RecordMaxAggregateOutputType | null
   }
@@ -7681,6 +7812,7 @@ export namespace Prisma {
     tableId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    position?: boolean
     userId?: boolean
     table?: boolean | TableDefaultArgs<ExtArgs>
     cells?: boolean | Record$cellsArgs<ExtArgs>
@@ -7693,6 +7825,7 @@ export namespace Prisma {
     tableId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    position?: boolean
     userId?: boolean
     table?: boolean | TableDefaultArgs<ExtArgs>
     user?: boolean | Record$userArgs<ExtArgs>
@@ -7703,6 +7836,7 @@ export namespace Prisma {
     tableId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    position?: boolean
     userId?: boolean
     table?: boolean | TableDefaultArgs<ExtArgs>
     user?: boolean | Record$userArgs<ExtArgs>
@@ -7713,10 +7847,11 @@ export namespace Prisma {
     tableId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    position?: boolean
     userId?: boolean
   }
 
-  export type RecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tableId" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["record"]>
+  export type RecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tableId" | "createdAt" | "updatedAt" | "position" | "userId", ExtArgs["result"]["record"]>
   export type RecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     table?: boolean | TableDefaultArgs<ExtArgs>
     cells?: boolean | Record$cellsArgs<ExtArgs>
@@ -7744,6 +7879,7 @@ export namespace Prisma {
       tableId: string
       createdAt: Date
       updatedAt: Date
+      position: number | null
       userId: string | null
     }, ExtArgs["result"]["record"]>
     composites: {}
@@ -8175,6 +8311,7 @@ export namespace Prisma {
     readonly tableId: FieldRef<"Record", 'String'>
     readonly createdAt: FieldRef<"Record", 'DateTime'>
     readonly updatedAt: FieldRef<"Record", 'DateTime'>
+    readonly position: FieldRef<"Record", 'Int'>
     readonly userId: FieldRef<"Record", 'String'>
   }
     
@@ -11846,8 +11983,18 @@ export namespace Prisma {
 
   export type AggregateViewSort = {
     _count: ViewSortCountAggregateOutputType | null
+    _avg: ViewSortAvgAggregateOutputType | null
+    _sum: ViewSortSumAggregateOutputType | null
     _min: ViewSortMinAggregateOutputType | null
     _max: ViewSortMaxAggregateOutputType | null
+  }
+
+  export type ViewSortAvgAggregateOutputType = {
+    order: number | null
+  }
+
+  export type ViewSortSumAggregateOutputType = {
+    order: number | null
   }
 
   export type ViewSortMinAggregateOutputType = {
@@ -11855,6 +12002,7 @@ export namespace Prisma {
     viewId: string | null
     fieldId: string | null
     direction: $Enums.SortDirection | null
+    order: number | null
   }
 
   export type ViewSortMaxAggregateOutputType = {
@@ -11862,6 +12010,7 @@ export namespace Prisma {
     viewId: string | null
     fieldId: string | null
     direction: $Enums.SortDirection | null
+    order: number | null
   }
 
   export type ViewSortCountAggregateOutputType = {
@@ -11869,15 +12018,25 @@ export namespace Prisma {
     viewId: number
     fieldId: number
     direction: number
+    order: number
     _all: number
   }
 
+
+  export type ViewSortAvgAggregateInputType = {
+    order?: true
+  }
+
+  export type ViewSortSumAggregateInputType = {
+    order?: true
+  }
 
   export type ViewSortMinAggregateInputType = {
     id?: true
     viewId?: true
     fieldId?: true
     direction?: true
+    order?: true
   }
 
   export type ViewSortMaxAggregateInputType = {
@@ -11885,6 +12044,7 @@ export namespace Prisma {
     viewId?: true
     fieldId?: true
     direction?: true
+    order?: true
   }
 
   export type ViewSortCountAggregateInputType = {
@@ -11892,6 +12052,7 @@ export namespace Prisma {
     viewId?: true
     fieldId?: true
     direction?: true
+    order?: true
     _all?: true
   }
 
@@ -11933,6 +12094,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ViewSortAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ViewSortSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ViewSortMinAggregateInputType
@@ -11963,6 +12136,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ViewSortCountAggregateInputType | true
+    _avg?: ViewSortAvgAggregateInputType
+    _sum?: ViewSortSumAggregateInputType
     _min?: ViewSortMinAggregateInputType
     _max?: ViewSortMaxAggregateInputType
   }
@@ -11972,7 +12147,10 @@ export namespace Prisma {
     viewId: string
     fieldId: string
     direction: $Enums.SortDirection
+    order: number | null
     _count: ViewSortCountAggregateOutputType | null
+    _avg: ViewSortAvgAggregateOutputType | null
+    _sum: ViewSortSumAggregateOutputType | null
     _min: ViewSortMinAggregateOutputType | null
     _max: ViewSortMaxAggregateOutputType | null
   }
@@ -11996,6 +12174,7 @@ export namespace Prisma {
     viewId?: boolean
     fieldId?: boolean
     direction?: boolean
+    order?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
     field?: boolean | FieldDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["viewSort"]>
@@ -12005,6 +12184,7 @@ export namespace Prisma {
     viewId?: boolean
     fieldId?: boolean
     direction?: boolean
+    order?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
     field?: boolean | FieldDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["viewSort"]>
@@ -12014,6 +12194,7 @@ export namespace Prisma {
     viewId?: boolean
     fieldId?: boolean
     direction?: boolean
+    order?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
     field?: boolean | FieldDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["viewSort"]>
@@ -12023,9 +12204,10 @@ export namespace Prisma {
     viewId?: boolean
     fieldId?: boolean
     direction?: boolean
+    order?: boolean
   }
 
-  export type ViewSortOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "viewId" | "fieldId" | "direction", ExtArgs["result"]["viewSort"]>
+  export type ViewSortOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "viewId" | "fieldId" | "direction" | "order", ExtArgs["result"]["viewSort"]>
   export type ViewSortInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     view?: boolean | ViewDefaultArgs<ExtArgs>
     field?: boolean | FieldDefaultArgs<ExtArgs>
@@ -12050,6 +12232,7 @@ export namespace Prisma {
       viewId: string
       fieldId: string
       direction: $Enums.SortDirection
+      order: number | null
     }, ExtArgs["result"]["viewSort"]>
     composites: {}
   }
@@ -12479,6 +12662,7 @@ export namespace Prisma {
     readonly viewId: FieldRef<"ViewSort", 'String'>
     readonly fieldId: FieldRef<"ViewSort", 'String'>
     readonly direction: FieldRef<"ViewSort", 'SortDirection'>
+    readonly order: FieldRef<"ViewSort", 'Int'>
   }
     
 
@@ -12939,7 +13123,9 @@ export namespace Prisma {
     id: 'id',
     baseId: 'baseId',
     name: 'name',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    createdById: 'createdById'
   };
 
   export type TableScalarFieldEnum = (typeof TableScalarFieldEnum)[keyof typeof TableScalarFieldEnum]
@@ -12961,6 +13147,7 @@ export namespace Prisma {
     tableId: 'tableId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
+    position: 'position',
     userId: 'userId'
   };
 
@@ -13000,7 +13187,8 @@ export namespace Prisma {
     id: 'id',
     viewId: 'viewId',
     fieldId: 'fieldId',
-    direction: 'direction'
+    direction: 'direction',
+    order: 'order'
   };
 
   export type ViewSortScalarFieldEnum = (typeof ViewSortScalarFieldEnum)[keyof typeof ViewSortScalarFieldEnum]
@@ -13164,6 +13352,7 @@ export namespace Prisma {
     basesOwned?: BaseListRelationFilter
     memberships?: BaseMemberListRelationFilter
     recordsCreated?: RecordListRelationFilter
+    tables?: TableListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -13174,6 +13363,7 @@ export namespace Prisma {
     basesOwned?: BaseOrderByRelationAggregateInput
     memberships?: BaseMemberOrderByRelationAggregateInput
     recordsCreated?: RecordOrderByRelationAggregateInput
+    tables?: TableOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -13187,6 +13377,7 @@ export namespace Prisma {
     basesOwned?: BaseListRelationFilter
     memberships?: BaseMemberListRelationFilter
     recordsCreated?: RecordListRelationFilter
+    tables?: TableListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -13317,7 +13508,10 @@ export namespace Prisma {
     baseId?: StringFilter<"Table"> | string
     name?: StringFilter<"Table"> | string
     createdAt?: DateTimeFilter<"Table"> | Date | string
+    updatedAt?: DateTimeFilter<"Table"> | Date | string
+    createdById?: StringNullableFilter<"Table"> | string | null
     base?: XOR<BaseScalarRelationFilter, BaseWhereInput>
+    creator?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     fields?: FieldListRelationFilter
     records?: RecordListRelationFilter
     views?: ViewListRelationFilter
@@ -13328,7 +13522,10 @@ export namespace Prisma {
     baseId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrderInput | SortOrder
     base?: BaseOrderByWithRelationInput
+    creator?: UserOrderByWithRelationInput
     fields?: FieldOrderByRelationAggregateInput
     records?: RecordOrderByRelationAggregateInput
     views?: ViewOrderByRelationAggregateInput
@@ -13342,7 +13539,10 @@ export namespace Prisma {
     baseId?: StringFilter<"Table"> | string
     name?: StringFilter<"Table"> | string
     createdAt?: DateTimeFilter<"Table"> | Date | string
+    updatedAt?: DateTimeFilter<"Table"> | Date | string
+    createdById?: StringNullableFilter<"Table"> | string | null
     base?: XOR<BaseScalarRelationFilter, BaseWhereInput>
+    creator?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     fields?: FieldListRelationFilter
     records?: RecordListRelationFilter
     views?: ViewListRelationFilter
@@ -13353,6 +13553,8 @@ export namespace Prisma {
     baseId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrderInput | SortOrder
     _count?: TableCountOrderByAggregateInput
     _max?: TableMaxOrderByAggregateInput
     _min?: TableMinOrderByAggregateInput
@@ -13366,6 +13568,8 @@ export namespace Prisma {
     baseId?: StringWithAggregatesFilter<"Table"> | string
     name?: StringWithAggregatesFilter<"Table"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Table"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Table"> | Date | string
+    createdById?: StringNullableWithAggregatesFilter<"Table"> | string | null
   }
 
   export type FieldWhereInput = {
@@ -13443,6 +13647,7 @@ export namespace Prisma {
     tableId?: StringFilter<"Record"> | string
     createdAt?: DateTimeFilter<"Record"> | Date | string
     updatedAt?: DateTimeFilter<"Record"> | Date | string
+    position?: IntNullableFilter<"Record"> | number | null
     userId?: StringNullableFilter<"Record"> | string | null
     table?: XOR<TableScalarRelationFilter, TableWhereInput>
     cells?: CellValueListRelationFilter
@@ -13454,6 +13659,7 @@ export namespace Prisma {
     tableId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    position?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     table?: TableOrderByWithRelationInput
     cells?: CellValueOrderByRelationAggregateInput
@@ -13468,6 +13674,7 @@ export namespace Prisma {
     tableId?: StringFilter<"Record"> | string
     createdAt?: DateTimeFilter<"Record"> | Date | string
     updatedAt?: DateTimeFilter<"Record"> | Date | string
+    position?: IntNullableFilter<"Record"> | number | null
     userId?: StringNullableFilter<"Record"> | string | null
     table?: XOR<TableScalarRelationFilter, TableWhereInput>
     cells?: CellValueListRelationFilter
@@ -13479,10 +13686,13 @@ export namespace Prisma {
     tableId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    position?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     _count?: RecordCountOrderByAggregateInput
+    _avg?: RecordAvgOrderByAggregateInput
     _max?: RecordMaxOrderByAggregateInput
     _min?: RecordMinOrderByAggregateInput
+    _sum?: RecordSumOrderByAggregateInput
   }
 
   export type RecordScalarWhereWithAggregatesInput = {
@@ -13493,6 +13703,7 @@ export namespace Prisma {
     tableId?: StringWithAggregatesFilter<"Record"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Record"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Record"> | Date | string
+    position?: IntNullableWithAggregatesFilter<"Record"> | number | null
     userId?: StringNullableWithAggregatesFilter<"Record"> | string | null
   }
 
@@ -13662,6 +13873,7 @@ export namespace Prisma {
     viewId?: StringFilter<"ViewSort"> | string
     fieldId?: StringFilter<"ViewSort"> | string
     direction?: EnumSortDirectionFilter<"ViewSort"> | $Enums.SortDirection
+    order?: IntNullableFilter<"ViewSort"> | number | null
     view?: XOR<ViewScalarRelationFilter, ViewWhereInput>
     field?: XOR<FieldScalarRelationFilter, FieldWhereInput>
   }
@@ -13671,6 +13883,7 @@ export namespace Prisma {
     viewId?: SortOrder
     fieldId?: SortOrder
     direction?: SortOrder
+    order?: SortOrderInput | SortOrder
     view?: ViewOrderByWithRelationInput
     field?: FieldOrderByWithRelationInput
   }
@@ -13683,6 +13896,7 @@ export namespace Prisma {
     viewId?: StringFilter<"ViewSort"> | string
     fieldId?: StringFilter<"ViewSort"> | string
     direction?: EnumSortDirectionFilter<"ViewSort"> | $Enums.SortDirection
+    order?: IntNullableFilter<"ViewSort"> | number | null
     view?: XOR<ViewScalarRelationFilter, ViewWhereInput>
     field?: XOR<FieldScalarRelationFilter, FieldWhereInput>
   }, "id">
@@ -13692,9 +13906,12 @@ export namespace Prisma {
     viewId?: SortOrder
     fieldId?: SortOrder
     direction?: SortOrder
+    order?: SortOrderInput | SortOrder
     _count?: ViewSortCountOrderByAggregateInput
+    _avg?: ViewSortAvgOrderByAggregateInput
     _max?: ViewSortMaxOrderByAggregateInput
     _min?: ViewSortMinOrderByAggregateInput
+    _sum?: ViewSortSumOrderByAggregateInput
   }
 
   export type ViewSortScalarWhereWithAggregatesInput = {
@@ -13705,6 +13922,7 @@ export namespace Prisma {
     viewId?: StringWithAggregatesFilter<"ViewSort"> | string
     fieldId?: StringWithAggregatesFilter<"ViewSort"> | string
     direction?: EnumSortDirectionWithAggregatesFilter<"ViewSort"> | $Enums.SortDirection
+    order?: IntNullableWithAggregatesFilter<"ViewSort"> | number | null
   }
 
   export type UserCreateInput = {
@@ -13715,6 +13933,7 @@ export namespace Prisma {
     basesOwned?: BaseCreateNestedManyWithoutOwnerInput
     memberships?: BaseMemberCreateNestedManyWithoutUserInput
     recordsCreated?: RecordCreateNestedManyWithoutUserInput
+    tables?: TableCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -13725,6 +13944,7 @@ export namespace Prisma {
     basesOwned?: BaseUncheckedCreateNestedManyWithoutOwnerInput
     memberships?: BaseMemberUncheckedCreateNestedManyWithoutUserInput
     recordsCreated?: RecordUncheckedCreateNestedManyWithoutUserInput
+    tables?: TableUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUpdateInput = {
@@ -13735,6 +13955,7 @@ export namespace Prisma {
     basesOwned?: BaseUpdateManyWithoutOwnerNestedInput
     memberships?: BaseMemberUpdateManyWithoutUserNestedInput
     recordsCreated?: RecordUpdateManyWithoutUserNestedInput
+    tables?: TableUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -13745,6 +13966,7 @@ export namespace Prisma {
     basesOwned?: BaseUncheckedUpdateManyWithoutOwnerNestedInput
     memberships?: BaseMemberUncheckedUpdateManyWithoutUserNestedInput
     recordsCreated?: RecordUncheckedUpdateManyWithoutUserNestedInput
+    tables?: TableUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -13862,7 +14084,9 @@ export namespace Prisma {
     id?: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     base: BaseCreateNestedOneWithoutTablesInput
+    creator?: UserCreateNestedOneWithoutTablesInput
     fields?: FieldCreateNestedManyWithoutTableInput
     records?: RecordCreateNestedManyWithoutTableInput
     views?: ViewCreateNestedManyWithoutTableInput
@@ -13873,6 +14097,8 @@ export namespace Prisma {
     baseId: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById?: string | null
     fields?: FieldUncheckedCreateNestedManyWithoutTableInput
     records?: RecordUncheckedCreateNestedManyWithoutTableInput
     views?: ViewUncheckedCreateNestedManyWithoutTableInput
@@ -13882,7 +14108,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     base?: BaseUpdateOneRequiredWithoutTablesNestedInput
+    creator?: UserUpdateOneWithoutTablesNestedInput
     fields?: FieldUpdateManyWithoutTableNestedInput
     records?: RecordUpdateManyWithoutTableNestedInput
     views?: ViewUpdateManyWithoutTableNestedInput
@@ -13893,6 +14121,8 @@ export namespace Prisma {
     baseId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
     fields?: FieldUncheckedUpdateManyWithoutTableNestedInput
     records?: RecordUncheckedUpdateManyWithoutTableNestedInput
     views?: ViewUncheckedUpdateManyWithoutTableNestedInput
@@ -13903,12 +14133,15 @@ export namespace Prisma {
     baseId: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById?: string | null
   }
 
   export type TableUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TableUncheckedUpdateManyInput = {
@@ -13916,6 +14149,8 @@ export namespace Prisma {
     baseId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type FieldCreateInput = {
@@ -13989,6 +14224,7 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     table: TableCreateNestedOneWithoutRecordsInput
     cells?: CellValueCreateNestedManyWithoutRecordInput
     user?: UserCreateNestedOneWithoutRecordsCreatedInput
@@ -13999,6 +14235,7 @@ export namespace Prisma {
     tableId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     userId?: string | null
     cells?: CellValueUncheckedCreateNestedManyWithoutRecordInput
   }
@@ -14007,6 +14244,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     table?: TableUpdateOneRequiredWithoutRecordsNestedInput
     cells?: CellValueUpdateManyWithoutRecordNestedInput
     user?: UserUpdateOneWithoutRecordsCreatedNestedInput
@@ -14017,6 +14255,7 @@ export namespace Prisma {
     tableId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     cells?: CellValueUncheckedUpdateManyWithoutRecordNestedInput
   }
@@ -14026,6 +14265,7 @@ export namespace Prisma {
     tableId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     userId?: string | null
   }
 
@@ -14033,6 +14273,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type RecordUncheckedUpdateManyInput = {
@@ -14040,6 +14281,7 @@ export namespace Prisma {
     tableId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -14189,6 +14431,7 @@ export namespace Prisma {
   export type ViewSortCreateInput = {
     id?: string
     direction: $Enums.SortDirection
+    order?: number | null
     view: ViewCreateNestedOneWithoutSortsInput
     field: FieldCreateNestedOneWithoutViewSortsInput
   }
@@ -14198,11 +14441,13 @@ export namespace Prisma {
     viewId: string
     fieldId: string
     direction: $Enums.SortDirection
+    order?: number | null
   }
 
   export type ViewSortUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     view?: ViewUpdateOneRequiredWithoutSortsNestedInput
     field?: FieldUpdateOneRequiredWithoutViewSortsNestedInput
   }
@@ -14212,6 +14457,7 @@ export namespace Prisma {
     viewId?: StringFieldUpdateOperationsInput | string
     fieldId?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewSortCreateManyInput = {
@@ -14219,11 +14465,13 @@ export namespace Prisma {
     viewId: string
     fieldId: string
     direction: $Enums.SortDirection
+    order?: number | null
   }
 
   export type ViewSortUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewSortUncheckedUpdateManyInput = {
@@ -14231,6 +14479,7 @@ export namespace Prisma {
     viewId?: StringFieldUpdateOperationsInput | string
     fieldId?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -14292,6 +14541,12 @@ export namespace Prisma {
     none?: RecordWhereInput
   }
 
+  export type TableListRelationFilter = {
+    every?: TableWhereInput
+    some?: TableWhereInput
+    none?: TableWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -14306,6 +14561,10 @@ export namespace Prisma {
   }
 
   export type RecordOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TableOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -14385,16 +14644,6 @@ export namespace Prisma {
     isNot?: UserWhereInput
   }
 
-  export type TableListRelationFilter = {
-    every?: TableWhereInput
-    some?: TableWhereInput
-    none?: TableWhereInput
-  }
-
-  export type TableOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type BaseCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -14441,6 +14690,11 @@ export namespace Prisma {
     userId?: SortOrder
   }
 
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type FieldListRelationFilter = {
     every?: FieldWhereInput
     some?: FieldWhereInput
@@ -14466,6 +14720,8 @@ export namespace Prisma {
     baseId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrder
   }
 
   export type TableMaxOrderByAggregateInput = {
@@ -14473,6 +14729,8 @@ export namespace Prisma {
     baseId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrder
   }
 
   export type TableMinOrderByAggregateInput = {
@@ -14480,6 +14738,8 @@ export namespace Prisma {
     baseId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrder
   }
 
   export type EnumFieldTypeFilter<$PrismaModel = never> = {
@@ -14598,17 +14858,17 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
-  }
-
   export type RecordCountOrderByAggregateInput = {
     id?: SortOrder
     tableId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    position?: SortOrder
     userId?: SortOrder
+  }
+
+  export type RecordAvgOrderByAggregateInput = {
+    position?: SortOrder
   }
 
   export type RecordMaxOrderByAggregateInput = {
@@ -14616,6 +14876,7 @@ export namespace Prisma {
     tableId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    position?: SortOrder
     userId?: SortOrder
   }
 
@@ -14624,7 +14885,12 @@ export namespace Prisma {
     tableId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    position?: SortOrder
     userId?: SortOrder
+  }
+
+  export type RecordSumOrderByAggregateInput = {
+    position?: SortOrder
   }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -14769,6 +15035,11 @@ export namespace Prisma {
     viewId?: SortOrder
     fieldId?: SortOrder
     direction?: SortOrder
+    order?: SortOrder
+  }
+
+  export type ViewSortAvgOrderByAggregateInput = {
+    order?: SortOrder
   }
 
   export type ViewSortMaxOrderByAggregateInput = {
@@ -14776,6 +15047,7 @@ export namespace Prisma {
     viewId?: SortOrder
     fieldId?: SortOrder
     direction?: SortOrder
+    order?: SortOrder
   }
 
   export type ViewSortMinOrderByAggregateInput = {
@@ -14783,6 +15055,11 @@ export namespace Prisma {
     viewId?: SortOrder
     fieldId?: SortOrder
     direction?: SortOrder
+    order?: SortOrder
+  }
+
+  export type ViewSortSumOrderByAggregateInput = {
+    order?: SortOrder
   }
 
   export type EnumSortDirectionWithAggregatesFilter<$PrismaModel = never> = {
@@ -14816,6 +15093,13 @@ export namespace Prisma {
     connect?: RecordWhereUniqueInput | RecordWhereUniqueInput[]
   }
 
+  export type TableCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<TableCreateWithoutCreatorInput, TableUncheckedCreateWithoutCreatorInput> | TableCreateWithoutCreatorInput[] | TableUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: TableCreateOrConnectWithoutCreatorInput | TableCreateOrConnectWithoutCreatorInput[]
+    createMany?: TableCreateManyCreatorInputEnvelope
+    connect?: TableWhereUniqueInput | TableWhereUniqueInput[]
+  }
+
   export type BaseUncheckedCreateNestedManyWithoutOwnerInput = {
     create?: XOR<BaseCreateWithoutOwnerInput, BaseUncheckedCreateWithoutOwnerInput> | BaseCreateWithoutOwnerInput[] | BaseUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: BaseCreateOrConnectWithoutOwnerInput | BaseCreateOrConnectWithoutOwnerInput[]
@@ -14835,6 +15119,13 @@ export namespace Prisma {
     connectOrCreate?: RecordCreateOrConnectWithoutUserInput | RecordCreateOrConnectWithoutUserInput[]
     createMany?: RecordCreateManyUserInputEnvelope
     connect?: RecordWhereUniqueInput | RecordWhereUniqueInput[]
+  }
+
+  export type TableUncheckedCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<TableCreateWithoutCreatorInput, TableUncheckedCreateWithoutCreatorInput> | TableCreateWithoutCreatorInput[] | TableUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: TableCreateOrConnectWithoutCreatorInput | TableCreateOrConnectWithoutCreatorInput[]
+    createMany?: TableCreateManyCreatorInputEnvelope
+    connect?: TableWhereUniqueInput | TableWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -14891,6 +15182,20 @@ export namespace Prisma {
     deleteMany?: RecordScalarWhereInput | RecordScalarWhereInput[]
   }
 
+  export type TableUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<TableCreateWithoutCreatorInput, TableUncheckedCreateWithoutCreatorInput> | TableCreateWithoutCreatorInput[] | TableUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: TableCreateOrConnectWithoutCreatorInput | TableCreateOrConnectWithoutCreatorInput[]
+    upsert?: TableUpsertWithWhereUniqueWithoutCreatorInput | TableUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: TableCreateManyCreatorInputEnvelope
+    set?: TableWhereUniqueInput | TableWhereUniqueInput[]
+    disconnect?: TableWhereUniqueInput | TableWhereUniqueInput[]
+    delete?: TableWhereUniqueInput | TableWhereUniqueInput[]
+    connect?: TableWhereUniqueInput | TableWhereUniqueInput[]
+    update?: TableUpdateWithWhereUniqueWithoutCreatorInput | TableUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: TableUpdateManyWithWhereWithoutCreatorInput | TableUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: TableScalarWhereInput | TableScalarWhereInput[]
+  }
+
   export type BaseUncheckedUpdateManyWithoutOwnerNestedInput = {
     create?: XOR<BaseCreateWithoutOwnerInput, BaseUncheckedCreateWithoutOwnerInput> | BaseCreateWithoutOwnerInput[] | BaseUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: BaseCreateOrConnectWithoutOwnerInput | BaseCreateOrConnectWithoutOwnerInput[]
@@ -14931,6 +15236,20 @@ export namespace Prisma {
     update?: RecordUpdateWithWhereUniqueWithoutUserInput | RecordUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: RecordUpdateManyWithWhereWithoutUserInput | RecordUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: RecordScalarWhereInput | RecordScalarWhereInput[]
+  }
+
+  export type TableUncheckedUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<TableCreateWithoutCreatorInput, TableUncheckedCreateWithoutCreatorInput> | TableCreateWithoutCreatorInput[] | TableUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: TableCreateOrConnectWithoutCreatorInput | TableCreateOrConnectWithoutCreatorInput[]
+    upsert?: TableUpsertWithWhereUniqueWithoutCreatorInput | TableUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: TableCreateManyCreatorInputEnvelope
+    set?: TableWhereUniqueInput | TableWhereUniqueInput[]
+    disconnect?: TableWhereUniqueInput | TableWhereUniqueInput[]
+    delete?: TableWhereUniqueInput | TableWhereUniqueInput[]
+    connect?: TableWhereUniqueInput | TableWhereUniqueInput[]
+    update?: TableUpdateWithWhereUniqueWithoutCreatorInput | TableUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: TableUpdateManyWithWhereWithoutCreatorInput | TableUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: TableScalarWhereInput | TableScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutBasesOwnedInput = {
@@ -15065,6 +15384,12 @@ export namespace Prisma {
     connect?: BaseWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutTablesInput = {
+    create?: XOR<UserCreateWithoutTablesInput, UserUncheckedCreateWithoutTablesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTablesInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type FieldCreateNestedManyWithoutTableInput = {
     create?: XOR<FieldCreateWithoutTableInput, FieldUncheckedCreateWithoutTableInput> | FieldCreateWithoutTableInput[] | FieldUncheckedCreateWithoutTableInput[]
     connectOrCreate?: FieldCreateOrConnectWithoutTableInput | FieldCreateOrConnectWithoutTableInput[]
@@ -15113,6 +15438,16 @@ export namespace Prisma {
     upsert?: BaseUpsertWithoutTablesInput
     connect?: BaseWhereUniqueInput
     update?: XOR<XOR<BaseUpdateToOneWithWhereWithoutTablesInput, BaseUpdateWithoutTablesInput>, BaseUncheckedUpdateWithoutTablesInput>
+  }
+
+  export type UserUpdateOneWithoutTablesNestedInput = {
+    create?: XOR<UserCreateWithoutTablesInput, UserUncheckedCreateWithoutTablesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTablesInput
+    upsert?: UserUpsertWithoutTablesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTablesInput, UserUpdateWithoutTablesInput>, UserUncheckedUpdateWithoutTablesInput>
   }
 
   export type FieldUpdateManyWithoutTableNestedInput = {
@@ -15852,6 +16187,7 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     table: TableCreateNestedOneWithoutRecordsInput
     cells?: CellValueCreateNestedManyWithoutRecordInput
   }
@@ -15861,6 +16197,7 @@ export namespace Prisma {
     tableId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     cells?: CellValueUncheckedCreateNestedManyWithoutRecordInput
   }
 
@@ -15871,6 +16208,38 @@ export namespace Prisma {
 
   export type RecordCreateManyUserInputEnvelope = {
     data: RecordCreateManyUserInput | RecordCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TableCreateWithoutCreatorInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    base: BaseCreateNestedOneWithoutTablesInput
+    fields?: FieldCreateNestedManyWithoutTableInput
+    records?: RecordCreateNestedManyWithoutTableInput
+    views?: ViewCreateNestedManyWithoutTableInput
+  }
+
+  export type TableUncheckedCreateWithoutCreatorInput = {
+    id?: string
+    baseId: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    fields?: FieldUncheckedCreateNestedManyWithoutTableInput
+    records?: RecordUncheckedCreateNestedManyWithoutTableInput
+    views?: ViewUncheckedCreateNestedManyWithoutTableInput
+  }
+
+  export type TableCreateOrConnectWithoutCreatorInput = {
+    where: TableWhereUniqueInput
+    create: XOR<TableCreateWithoutCreatorInput, TableUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type TableCreateManyCreatorInputEnvelope = {
+    data: TableCreateManyCreatorInput | TableCreateManyCreatorInput[]
     skipDuplicates?: boolean
   }
 
@@ -15948,7 +16317,36 @@ export namespace Prisma {
     tableId?: StringFilter<"Record"> | string
     createdAt?: DateTimeFilter<"Record"> | Date | string
     updatedAt?: DateTimeFilter<"Record"> | Date | string
+    position?: IntNullableFilter<"Record"> | number | null
     userId?: StringNullableFilter<"Record"> | string | null
+  }
+
+  export type TableUpsertWithWhereUniqueWithoutCreatorInput = {
+    where: TableWhereUniqueInput
+    update: XOR<TableUpdateWithoutCreatorInput, TableUncheckedUpdateWithoutCreatorInput>
+    create: XOR<TableCreateWithoutCreatorInput, TableUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type TableUpdateWithWhereUniqueWithoutCreatorInput = {
+    where: TableWhereUniqueInput
+    data: XOR<TableUpdateWithoutCreatorInput, TableUncheckedUpdateWithoutCreatorInput>
+  }
+
+  export type TableUpdateManyWithWhereWithoutCreatorInput = {
+    where: TableScalarWhereInput
+    data: XOR<TableUpdateManyMutationInput, TableUncheckedUpdateManyWithoutCreatorInput>
+  }
+
+  export type TableScalarWhereInput = {
+    AND?: TableScalarWhereInput | TableScalarWhereInput[]
+    OR?: TableScalarWhereInput[]
+    NOT?: TableScalarWhereInput | TableScalarWhereInput[]
+    id?: StringFilter<"Table"> | string
+    baseId?: StringFilter<"Table"> | string
+    name?: StringFilter<"Table"> | string
+    createdAt?: DateTimeFilter<"Table"> | Date | string
+    updatedAt?: DateTimeFilter<"Table"> | Date | string
+    createdById?: StringNullableFilter<"Table"> | string | null
   }
 
   export type UserCreateWithoutBasesOwnedInput = {
@@ -15958,6 +16356,7 @@ export namespace Prisma {
     createdAt?: Date | string
     memberships?: BaseMemberCreateNestedManyWithoutUserInput
     recordsCreated?: RecordCreateNestedManyWithoutUserInput
+    tables?: TableCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateWithoutBasesOwnedInput = {
@@ -15967,6 +16366,7 @@ export namespace Prisma {
     createdAt?: Date | string
     memberships?: BaseMemberUncheckedCreateNestedManyWithoutUserInput
     recordsCreated?: RecordUncheckedCreateNestedManyWithoutUserInput
+    tables?: TableUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserCreateOrConnectWithoutBasesOwnedInput = {
@@ -15978,6 +16378,8 @@ export namespace Prisma {
     id?: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+    creator?: UserCreateNestedOneWithoutTablesInput
     fields?: FieldCreateNestedManyWithoutTableInput
     records?: RecordCreateNestedManyWithoutTableInput
     views?: ViewCreateNestedManyWithoutTableInput
@@ -15987,6 +16389,8 @@ export namespace Prisma {
     id?: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById?: string | null
     fields?: FieldUncheckedCreateNestedManyWithoutTableInput
     records?: RecordUncheckedCreateNestedManyWithoutTableInput
     views?: ViewUncheckedCreateNestedManyWithoutTableInput
@@ -16038,6 +16442,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     memberships?: BaseMemberUpdateManyWithoutUserNestedInput
     recordsCreated?: RecordUpdateManyWithoutUserNestedInput
+    tables?: TableUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBasesOwnedInput = {
@@ -16047,6 +16452,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     memberships?: BaseMemberUncheckedUpdateManyWithoutUserNestedInput
     recordsCreated?: RecordUncheckedUpdateManyWithoutUserNestedInput
+    tables?: TableUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type TableUpsertWithWhereUniqueWithoutBaseInput = {
@@ -16063,16 +16469,6 @@ export namespace Prisma {
   export type TableUpdateManyWithWhereWithoutBaseInput = {
     where: TableScalarWhereInput
     data: XOR<TableUpdateManyMutationInput, TableUncheckedUpdateManyWithoutBaseInput>
-  }
-
-  export type TableScalarWhereInput = {
-    AND?: TableScalarWhereInput | TableScalarWhereInput[]
-    OR?: TableScalarWhereInput[]
-    NOT?: TableScalarWhereInput | TableScalarWhereInput[]
-    id?: StringFilter<"Table"> | string
-    baseId?: StringFilter<"Table"> | string
-    name?: StringFilter<"Table"> | string
-    createdAt?: DateTimeFilter<"Table"> | Date | string
   }
 
   export type BaseMemberUpsertWithWhereUniqueWithoutBaseInput = {
@@ -16119,6 +16515,7 @@ export namespace Prisma {
     createdAt?: Date | string
     basesOwned?: BaseCreateNestedManyWithoutOwnerInput
     recordsCreated?: RecordCreateNestedManyWithoutUserInput
+    tables?: TableCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -16128,6 +16525,7 @@ export namespace Prisma {
     createdAt?: Date | string
     basesOwned?: BaseUncheckedCreateNestedManyWithoutOwnerInput
     recordsCreated?: RecordUncheckedCreateNestedManyWithoutUserInput
+    tables?: TableUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -16180,6 +16578,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     basesOwned?: BaseUpdateManyWithoutOwnerNestedInput
     recordsCreated?: RecordUpdateManyWithoutUserNestedInput
+    tables?: TableUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -16189,6 +16588,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     basesOwned?: BaseUncheckedUpdateManyWithoutOwnerNestedInput
     recordsCreated?: RecordUncheckedUpdateManyWithoutUserNestedInput
+    tables?: TableUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type BaseCreateWithoutTablesInput = {
@@ -16210,6 +16610,31 @@ export namespace Prisma {
   export type BaseCreateOrConnectWithoutTablesInput = {
     where: BaseWhereUniqueInput
     create: XOR<BaseCreateWithoutTablesInput, BaseUncheckedCreateWithoutTablesInput>
+  }
+
+  export type UserCreateWithoutTablesInput = {
+    id?: string
+    email: string
+    name?: string | null
+    createdAt?: Date | string
+    basesOwned?: BaseCreateNestedManyWithoutOwnerInput
+    memberships?: BaseMemberCreateNestedManyWithoutUserInput
+    recordsCreated?: RecordCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutTablesInput = {
+    id?: string
+    email: string
+    name?: string | null
+    createdAt?: Date | string
+    basesOwned?: BaseUncheckedCreateNestedManyWithoutOwnerInput
+    memberships?: BaseMemberUncheckedCreateNestedManyWithoutUserInput
+    recordsCreated?: RecordUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutTablesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTablesInput, UserUncheckedCreateWithoutTablesInput>
   }
 
   export type FieldCreateWithoutTableInput = {
@@ -16246,6 +16671,7 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     cells?: CellValueCreateNestedManyWithoutRecordInput
     user?: UserCreateNestedOneWithoutRecordsCreatedInput
   }
@@ -16254,6 +16680,7 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     userId?: string | null
     cells?: CellValueUncheckedCreateNestedManyWithoutRecordInput
   }
@@ -16319,6 +16746,37 @@ export namespace Prisma {
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: BaseMemberUncheckedUpdateManyWithoutBaseNestedInput
+  }
+
+  export type UserUpsertWithoutTablesInput = {
+    update: XOR<UserUpdateWithoutTablesInput, UserUncheckedUpdateWithoutTablesInput>
+    create: XOR<UserCreateWithoutTablesInput, UserUncheckedCreateWithoutTablesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTablesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTablesInput, UserUncheckedUpdateWithoutTablesInput>
+  }
+
+  export type UserUpdateWithoutTablesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    basesOwned?: BaseUpdateManyWithoutOwnerNestedInput
+    memberships?: BaseMemberUpdateManyWithoutUserNestedInput
+    recordsCreated?: RecordUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTablesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    basesOwned?: BaseUncheckedUpdateManyWithoutOwnerNestedInput
+    memberships?: BaseMemberUncheckedUpdateManyWithoutUserNestedInput
+    recordsCreated?: RecordUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type FieldUpsertWithWhereUniqueWithoutTableInput = {
@@ -16394,7 +16852,9 @@ export namespace Prisma {
     id?: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     base: BaseCreateNestedOneWithoutTablesInput
+    creator?: UserCreateNestedOneWithoutTablesInput
     records?: RecordCreateNestedManyWithoutTableInput
     views?: ViewCreateNestedManyWithoutTableInput
   }
@@ -16404,6 +16864,8 @@ export namespace Prisma {
     baseId: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById?: string | null
     records?: RecordUncheckedCreateNestedManyWithoutTableInput
     views?: ViewUncheckedCreateNestedManyWithoutTableInput
   }
@@ -16458,6 +16920,7 @@ export namespace Prisma {
   export type ViewSortCreateWithoutFieldInput = {
     id?: string
     direction: $Enums.SortDirection
+    order?: number | null
     view: ViewCreateNestedOneWithoutSortsInput
   }
 
@@ -16465,6 +16928,7 @@ export namespace Prisma {
     id?: string
     viewId: string
     direction: $Enums.SortDirection
+    order?: number | null
   }
 
   export type ViewSortCreateOrConnectWithoutFieldInput = {
@@ -16492,7 +16956,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     base?: BaseUpdateOneRequiredWithoutTablesNestedInput
+    creator?: UserUpdateOneWithoutTablesNestedInput
     records?: RecordUpdateManyWithoutTableNestedInput
     views?: ViewUpdateManyWithoutTableNestedInput
   }
@@ -16502,6 +16968,8 @@ export namespace Prisma {
     baseId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
     records?: RecordUncheckedUpdateManyWithoutTableNestedInput
     views?: ViewUncheckedUpdateManyWithoutTableNestedInput
   }
@@ -16581,13 +17049,16 @@ export namespace Prisma {
     viewId?: StringFilter<"ViewSort"> | string
     fieldId?: StringFilter<"ViewSort"> | string
     direction?: EnumSortDirectionFilter<"ViewSort"> | $Enums.SortDirection
+    order?: IntNullableFilter<"ViewSort"> | number | null
   }
 
   export type TableCreateWithoutRecordsInput = {
     id?: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     base: BaseCreateNestedOneWithoutTablesInput
+    creator?: UserCreateNestedOneWithoutTablesInput
     fields?: FieldCreateNestedManyWithoutTableInput
     views?: ViewCreateNestedManyWithoutTableInput
   }
@@ -16597,6 +17068,8 @@ export namespace Prisma {
     baseId: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById?: string | null
     fields?: FieldUncheckedCreateNestedManyWithoutTableInput
     views?: ViewUncheckedCreateNestedManyWithoutTableInput
   }
@@ -16633,6 +17106,7 @@ export namespace Prisma {
     createdAt?: Date | string
     basesOwned?: BaseCreateNestedManyWithoutOwnerInput
     memberships?: BaseMemberCreateNestedManyWithoutUserInput
+    tables?: TableCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateWithoutRecordsCreatedInput = {
@@ -16642,6 +17116,7 @@ export namespace Prisma {
     createdAt?: Date | string
     basesOwned?: BaseUncheckedCreateNestedManyWithoutOwnerInput
     memberships?: BaseMemberUncheckedCreateNestedManyWithoutUserInput
+    tables?: TableUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserCreateOrConnectWithoutRecordsCreatedInput = {
@@ -16664,7 +17139,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     base?: BaseUpdateOneRequiredWithoutTablesNestedInput
+    creator?: UserUpdateOneWithoutTablesNestedInput
     fields?: FieldUpdateManyWithoutTableNestedInput
     views?: ViewUpdateManyWithoutTableNestedInput
   }
@@ -16674,6 +17151,8 @@ export namespace Prisma {
     baseId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
     fields?: FieldUncheckedUpdateManyWithoutTableNestedInput
     views?: ViewUncheckedUpdateManyWithoutTableNestedInput
   }
@@ -16712,6 +17191,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     basesOwned?: BaseUpdateManyWithoutOwnerNestedInput
     memberships?: BaseMemberUpdateManyWithoutUserNestedInput
+    tables?: TableUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRecordsCreatedInput = {
@@ -16721,12 +17201,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     basesOwned?: BaseUncheckedUpdateManyWithoutOwnerNestedInput
     memberships?: BaseMemberUncheckedUpdateManyWithoutUserNestedInput
+    tables?: TableUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type RecordCreateWithoutCellsInput = {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     table: TableCreateNestedOneWithoutRecordsInput
     user?: UserCreateNestedOneWithoutRecordsCreatedInput
   }
@@ -16736,6 +17218,7 @@ export namespace Prisma {
     tableId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     userId?: string | null
   }
 
@@ -16784,6 +17267,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     table?: TableUpdateOneRequiredWithoutRecordsNestedInput
     user?: UserUpdateOneWithoutRecordsCreatedNestedInput
   }
@@ -16793,6 +17277,7 @@ export namespace Prisma {
     tableId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -16831,7 +17316,9 @@ export namespace Prisma {
     id?: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     base: BaseCreateNestedOneWithoutTablesInput
+    creator?: UserCreateNestedOneWithoutTablesInput
     fields?: FieldCreateNestedManyWithoutTableInput
     records?: RecordCreateNestedManyWithoutTableInput
   }
@@ -16841,6 +17328,8 @@ export namespace Prisma {
     baseId: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById?: string | null
     fields?: FieldUncheckedCreateNestedManyWithoutTableInput
     records?: RecordUncheckedCreateNestedManyWithoutTableInput
   }
@@ -16875,6 +17364,7 @@ export namespace Prisma {
   export type ViewSortCreateWithoutViewInput = {
     id?: string
     direction: $Enums.SortDirection
+    order?: number | null
     field: FieldCreateNestedOneWithoutViewSortsInput
   }
 
@@ -16882,6 +17372,7 @@ export namespace Prisma {
     id?: string
     fieldId: string
     direction: $Enums.SortDirection
+    order?: number | null
   }
 
   export type ViewSortCreateOrConnectWithoutViewInput = {
@@ -16909,7 +17400,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     base?: BaseUpdateOneRequiredWithoutTablesNestedInput
+    creator?: UserUpdateOneWithoutTablesNestedInput
     fields?: FieldUpdateManyWithoutTableNestedInput
     records?: RecordUpdateManyWithoutTableNestedInput
   }
@@ -16919,6 +17412,8 @@ export namespace Prisma {
     baseId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
     fields?: FieldUncheckedUpdateManyWithoutTableNestedInput
     records?: RecordUncheckedUpdateManyWithoutTableNestedInput
   }
@@ -17178,6 +17673,15 @@ export namespace Prisma {
     tableId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
+  }
+
+  export type TableCreateManyCreatorInput = {
+    id?: string
+    baseId: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type BaseUpdateWithoutOwnerInput = {
@@ -17218,6 +17722,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     table?: TableUpdateOneRequiredWithoutRecordsNestedInput
     cells?: CellValueUpdateManyWithoutRecordNestedInput
   }
@@ -17227,6 +17732,7 @@ export namespace Prisma {
     tableId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     cells?: CellValueUncheckedUpdateManyWithoutRecordNestedInput
   }
 
@@ -17235,12 +17741,45 @@ export namespace Prisma {
     tableId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type TableUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    base?: BaseUpdateOneRequiredWithoutTablesNestedInput
+    fields?: FieldUpdateManyWithoutTableNestedInput
+    records?: RecordUpdateManyWithoutTableNestedInput
+    views?: ViewUpdateManyWithoutTableNestedInput
+  }
+
+  export type TableUncheckedUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    baseId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fields?: FieldUncheckedUpdateManyWithoutTableNestedInput
+    records?: RecordUncheckedUpdateManyWithoutTableNestedInput
+    views?: ViewUncheckedUpdateManyWithoutTableNestedInput
+  }
+
+  export type TableUncheckedUpdateManyWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    baseId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TableCreateManyBaseInput = {
     id?: string
     name: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById?: string | null
   }
 
   export type BaseMemberCreateManyBaseInput = {
@@ -17251,6 +17790,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneWithoutTablesNestedInput
     fields?: FieldUpdateManyWithoutTableNestedInput
     records?: RecordUpdateManyWithoutTableNestedInput
     views?: ViewUpdateManyWithoutTableNestedInput
@@ -17260,6 +17801,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
     fields?: FieldUncheckedUpdateManyWithoutTableNestedInput
     records?: RecordUncheckedUpdateManyWithoutTableNestedInput
     views?: ViewUncheckedUpdateManyWithoutTableNestedInput
@@ -17269,6 +17812,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type BaseMemberUpdateWithoutBaseInput = {
@@ -17294,6 +17839,7 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    position?: number | null
     userId?: string | null
   }
 
@@ -17334,6 +17880,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     cells?: CellValueUpdateManyWithoutRecordNestedInput
     user?: UserUpdateOneWithoutRecordsCreatedNestedInput
   }
@@ -17342,6 +17889,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     cells?: CellValueUncheckedUpdateManyWithoutRecordNestedInput
   }
@@ -17350,6 +17898,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -17390,6 +17939,7 @@ export namespace Prisma {
     id?: string
     viewId: string
     direction: $Enums.SortDirection
+    order?: number | null
   }
 
   export type CellValueUpdateWithoutFieldInput = {
@@ -17428,6 +17978,7 @@ export namespace Prisma {
   export type ViewSortUpdateWithoutFieldInput = {
     id?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     view?: ViewUpdateOneRequiredWithoutSortsNestedInput
   }
 
@@ -17435,12 +17986,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewSortUncheckedUpdateManyWithoutFieldInput = {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type CellValueCreateManyRecordInput = {
@@ -17473,6 +18026,7 @@ export namespace Prisma {
     id?: string
     fieldId: string
     direction: $Enums.SortDirection
+    order?: number | null
   }
 
   export type ViewFilterUpdateWithoutViewInput = {
@@ -17496,6 +18050,7 @@ export namespace Prisma {
   export type ViewSortUpdateWithoutViewInput = {
     id?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     field?: FieldUpdateOneRequiredWithoutViewSortsNestedInput
   }
 
@@ -17503,12 +18058,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     fieldId?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewSortUncheckedUpdateManyWithoutViewInput = {
     id?: StringFieldUpdateOperationsInput | string
     fieldId?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
+    order?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
 
