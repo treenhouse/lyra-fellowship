@@ -131,7 +131,6 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.BaseScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  ownerId: 'ownerId',
   createdAt: 'createdAt'
 };
 

@@ -6,6 +6,11 @@ generator client {
   output   = "../generated/prisma"
 }
 
+// generator zod {
+//   provider = "prisma-zod-generator"
+//   output   = "../generated/zod"
+// }
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -17,7 +22,7 @@ model User {
   name      String?
   createdAt DateTime @default(now())
 
-  basesOwned     Base[]       @relation("BaseOwner")
+  // basesOwned     Base[]       @relation("BaseOwner")
   memberships    BaseMember[]
   recordsCreated Record[]
   tables         Table[]
@@ -26,10 +31,10 @@ model User {
 model Base {
   id        String   @id @default(uuid())
   name      String
-  ownerId   String
+  // ownerId   String
   createdAt DateTime @default(now())
 
-  owner User @relation("BaseOwner", fields: [ownerId], references: [id])
+  // owner User @relation("BaseOwner", fields: [ownerId], references: [id])
 
   tables  Table[]
   members BaseMember[]

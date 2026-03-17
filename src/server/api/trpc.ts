@@ -6,7 +6,7 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
@@ -24,9 +24,21 @@ import { db } from "~/server/db";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+/** Session shape for protected procedures. Plug in real auth (e.g. getServerSession) later. */
+export type AuthSession = { user: { id: string } };
+
+/** Explicit context type so middleware sees session as AuthSession | null. */
+export type Context = {
+  db: typeof db;
+  session: AuthSession | null;
+  headers: Headers;
+};
+
+export const createTRPCContext = async (opts: { headers: Headers }): Promise<Context> => {
+  const session: AuthSession | null = null;
   return {
     db,
+    session,
     ...opts,
   };
 };
@@ -38,7 +50,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<Context>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
@@ -103,4 +115,29 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure.use(timingMiddleware);
+export const publicProcedure = t.procedure;
+
+/**
+ * Protected (authenticated) procedure
+ *
+ * Use for procedures that require a logged-in user. Throws UNAUTHORIZED if ctx.session is null.
+ * Plug in real auth in createTRPCContext (e.g. getServerSession) and set session there.
+ */
+// const enforceAuth = t.middleware(({ ctx, next }) => {
+//   if (!ctx.session?.user?.id) {
+//     throw new TRPCError({
+//       code: "UNAUTHORIZED",
+//       message: "No valid session. Please sign in.",
+//     });
+//   }
+
+//   return next({
+//     ctx: {
+//       ...ctx,
+//       session: ctx.session,
+//     },
+//   });
+// });
+
+// export const protectedProcedure = t.procedure.use(enforceAuth);
+export const protectedProcedure = t.procedure;
