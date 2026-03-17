@@ -1,7 +1,5 @@
 "use client";
 
-// src/app/base/[baseId]/page.tsx
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
