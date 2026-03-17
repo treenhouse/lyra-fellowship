@@ -271,9 +271,18 @@ function Cell({ recordId, fieldId, fieldType, value, isSelected, isEditing, onSe
   );
 }
 
-function Grid({ table, records, onSavingChange }: {
-  table: TableWithMeta; records: RecordRow[]; onSavingChange: (v: boolean) => void;
+function Grid({ table, records, viewId, onSavingChange }: {
+  table: TableWithMeta; 
+  records: RecordRow[]; 
+  viewId: string | null; 
+  onSavingChange: (v: boolean) => void;
 }) {
+  const queryKey = { 
+    tableId: table.id, 
+    viewId: viewId ?? undefined, 
+    limit: 500 
+  } as const;
+
   const [selected,    setSelected]    = useState<{ r: number; c: number } | null>(null);
   const [editing,     setEditing]     = useState<{ r: number; c: number } | null>(null);
   const [addingField, setAddingField] = useState(false);
@@ -285,13 +294,11 @@ function Grid({ table, records, onSavingChange }: {
     onMutate:  async ({ recordId, fieldId, value }) => {
       onSavingChange(true);
 
-      await utils.record.list.cancel({ tableId: table.id, limit: 500 });
+      await utils.record.list.cancel(queryKey);
 
-      const previous = utils.record.list.getData({ tableId: table.id, limit: 500 });
-      
-      utils.record.list.setData(
-        { tableId: table.id, limit: 500 },
-        (old) => {
+      const previous = utils.record.list.getData(queryKey);
+
+      utils.record.list.setData(queryKey, (old) => {
           if (!old) return old;
           return {
             ...old,
@@ -312,10 +319,7 @@ function Grid({ table, records, onSavingChange }: {
     },
 
     onError: (_err, _input, context) => {
-      utils.record.list.setData(
-        { tableId: table.id, limit: 500 },
-        context?.previous
-      );
+      utils.record.list.setData(queryKey, context?.previous);
     },
 
     onSettled: () => {
@@ -325,14 +329,14 @@ function Grid({ table, records, onSavingChange }: {
   });
 
   const addRecord = api.record.create.useMutation({
-    onMutate: async ({ tableId }) => {
-      await utils.record.list.cancel({ tableId });
+    onMutate: async () => {
+      await utils.record.list.cancel(queryKey);
   
-      const previous = utils.record.list.getData({ tableId, limit: 500 });
+      const previous = utils.record.list.getData(queryKey);
   
       // Insert a placeholder row with a temp ID
       const tempId = `temp-${Date.now()}`;
-      utils.record.list.setData({ tableId, limit: 500 }, (old) => {
+      utils.record.list.setData(queryKey, (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -340,7 +344,7 @@ function Grid({ table, records, onSavingChange }: {
             ...old.records,
             {
               id: tempId,
-              tableId,
+              tableId: table.id,
               position: old.records.length,
               createdAt: new Date(),
               updatedAt: new Date(),
@@ -355,10 +359,7 @@ function Grid({ table, records, onSavingChange }: {
     },
   
     onError: (_err, _input, context) => {
-      utils.record.list.setData(
-        { tableId: table.id, limit: 500 },
-        context?.previous
-      );
+      utils.record.list.setData(queryKey, context?.previous);
     },
   
     onSettled: () => void utils.record.list.invalidate({ tableId: table.id }),
@@ -366,11 +367,11 @@ function Grid({ table, records, onSavingChange }: {
 
   const deleteRecord = api.record.delete.useMutation({
     onMutate: async ({ id }) => {
-      await utils.record.list.cancel({ tableId: table.id });
+      await utils.record.list.cancel(queryKey);
   
-      const previous = utils.record.list.getData({ tableId: table.id, limit: 500 });
+      const previous = utils.record.list.getData(queryKey);
   
-      utils.record.list.setData({ tableId: table.id, limit: 500 }, (old) => {
+      utils.record.list.setData(queryKey, (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -382,10 +383,7 @@ function Grid({ table, records, onSavingChange }: {
     },
   
     onError: (_err, _input, context) => {
-      utils.record.list.setData(
-        { tableId: table.id, limit: 500 },
-        context?.previous
-      );
+      utils.record.list.setData(queryKey,context?.previous);
     },
   
     onSettled: () => {
@@ -755,7 +753,7 @@ export default function BasePage() {
             </div>
           ) : table ? (
             <>
-              <Grid table={table} records={filteredRecords} onSavingChange={setIsSaving} />
+              <Grid table={table} records={filteredRecords} viewId={activeViewId} onSavingChange={setIsSaving} />
 
               {/* Status bar matching Airtable */}
               <div className="flex-shrink-0 flex items-center h-[32px] border-t border-gray-200 px-4 bg-white gap-3">
