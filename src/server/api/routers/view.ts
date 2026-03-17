@@ -53,6 +53,7 @@ export const viewRouter = createTRPCRouter({
         id:      z.string().uuid().optional(),
         viewId:  z.string().uuid(),
         fieldId: z.string().uuid(),
+        operator: z.string().default("equals"),
         value:   z.union([z.string(), z.number(), z.null()]).optional(),
       })
     )
@@ -120,5 +121,17 @@ export const viewRouter = createTRPCRouter({
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.viewSort.delete({ where: { id: input.id } });
+    }),
+
+  getWithConfig: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.view.findUnique({
+        where: { id: input.id },
+        include: {
+          filters: { include: { field: true } },
+          sorts:   { include: { field: true }, orderBy: { order: "asc" } },
+        },
+      });
     }),
 });

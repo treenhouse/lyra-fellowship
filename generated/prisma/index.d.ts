@@ -10855,18 +10855,21 @@ export namespace Prisma {
     id: string | null
     viewId: string | null
     fieldId: string | null
+    operator: string | null
   }
 
   export type ViewFilterMaxAggregateOutputType = {
     id: string | null
     viewId: string | null
     fieldId: string | null
+    operator: string | null
   }
 
   export type ViewFilterCountAggregateOutputType = {
     id: number
     viewId: number
     fieldId: number
+    operator: number
     value: number
     _all: number
   }
@@ -10876,18 +10879,21 @@ export namespace Prisma {
     id?: true
     viewId?: true
     fieldId?: true
+    operator?: true
   }
 
   export type ViewFilterMaxAggregateInputType = {
     id?: true
     viewId?: true
     fieldId?: true
+    operator?: true
   }
 
   export type ViewFilterCountAggregateInputType = {
     id?: true
     viewId?: true
     fieldId?: true
+    operator?: true
     value?: true
     _all?: true
   }
@@ -10968,6 +10974,7 @@ export namespace Prisma {
     id: string
     viewId: string
     fieldId: string | null
+    operator: string
     value: JsonValue | null
     _count: ViewFilterCountAggregateOutputType | null
     _min: ViewFilterMinAggregateOutputType | null
@@ -10992,6 +10999,7 @@ export namespace Prisma {
     id?: boolean
     viewId?: boolean
     fieldId?: boolean
+    operator?: boolean
     value?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
@@ -11001,6 +11009,7 @@ export namespace Prisma {
     id?: boolean
     viewId?: boolean
     fieldId?: boolean
+    operator?: boolean
     value?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
@@ -11010,6 +11019,7 @@ export namespace Prisma {
     id?: boolean
     viewId?: boolean
     fieldId?: boolean
+    operator?: boolean
     value?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
@@ -11019,10 +11029,11 @@ export namespace Prisma {
     id?: boolean
     viewId?: boolean
     fieldId?: boolean
+    operator?: boolean
     value?: boolean
   }
 
-  export type ViewFilterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "viewId" | "fieldId" | "value", ExtArgs["result"]["viewFilter"]>
+  export type ViewFilterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "viewId" | "fieldId" | "operator" | "value", ExtArgs["result"]["viewFilter"]>
   export type ViewFilterInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     view?: boolean | ViewDefaultArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
@@ -11046,6 +11057,7 @@ export namespace Prisma {
       id: string
       viewId: string
       fieldId: string | null
+      operator: string
       value: Prisma.JsonValue | null
     }, ExtArgs["result"]["viewFilter"]>
     composites: {}
@@ -11475,6 +11487,7 @@ export namespace Prisma {
     readonly id: FieldRef<"ViewFilter", 'String'>
     readonly viewId: FieldRef<"ViewFilter", 'String'>
     readonly fieldId: FieldRef<"ViewFilter", 'String'>
+    readonly operator: FieldRef<"ViewFilter", 'String'>
     readonly value: FieldRef<"ViewFilter", 'Json'>
   }
     
@@ -13108,6 +13121,7 @@ export namespace Prisma {
     id: 'id',
     viewId: 'viewId',
     fieldId: 'fieldId',
+    operator: 'operator',
     value: 'value'
   };
 
@@ -13739,6 +13753,7 @@ export namespace Prisma {
     id?: StringFilter<"ViewFilter"> | string
     viewId?: StringFilter<"ViewFilter"> | string
     fieldId?: StringNullableFilter<"ViewFilter"> | string | null
+    operator?: StringFilter<"ViewFilter"> | string
     value?: JsonNullableFilter<"ViewFilter">
     view?: XOR<ViewScalarRelationFilter, ViewWhereInput>
     field?: XOR<FieldNullableScalarRelationFilter, FieldWhereInput> | null
@@ -13748,6 +13763,7 @@ export namespace Prisma {
     id?: SortOrder
     viewId?: SortOrder
     fieldId?: SortOrderInput | SortOrder
+    operator?: SortOrder
     value?: SortOrderInput | SortOrder
     view?: ViewOrderByWithRelationInput
     field?: FieldOrderByWithRelationInput
@@ -13760,6 +13776,7 @@ export namespace Prisma {
     NOT?: ViewFilterWhereInput | ViewFilterWhereInput[]
     viewId?: StringFilter<"ViewFilter"> | string
     fieldId?: StringNullableFilter<"ViewFilter"> | string | null
+    operator?: StringFilter<"ViewFilter"> | string
     value?: JsonNullableFilter<"ViewFilter">
     view?: XOR<ViewScalarRelationFilter, ViewWhereInput>
     field?: XOR<FieldNullableScalarRelationFilter, FieldWhereInput> | null
@@ -13769,6 +13786,7 @@ export namespace Prisma {
     id?: SortOrder
     viewId?: SortOrder
     fieldId?: SortOrderInput | SortOrder
+    operator?: SortOrder
     value?: SortOrderInput | SortOrder
     _count?: ViewFilterCountOrderByAggregateInput
     _max?: ViewFilterMaxOrderByAggregateInput
@@ -13782,6 +13800,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"ViewFilter"> | string
     viewId?: StringWithAggregatesFilter<"ViewFilter"> | string
     fieldId?: StringNullableWithAggregatesFilter<"ViewFilter"> | string | null
+    operator?: StringWithAggregatesFilter<"ViewFilter"> | string
     value?: JsonNullableWithAggregatesFilter<"ViewFilter">
   }
 
@@ -14293,6 +14312,7 @@ export namespace Prisma {
 
   export type ViewFilterCreateInput = {
     id?: string
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
     view: ViewCreateNestedOneWithoutFiltersInput
     field?: FieldCreateNestedOneWithoutViewFiltersInput
@@ -14302,11 +14322,13 @@ export namespace Prisma {
     id?: string
     viewId: string
     fieldId?: string | null
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type ViewFilterUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
     view?: ViewUpdateOneRequiredWithoutFiltersNestedInput
     field?: FieldUpdateOneWithoutViewFiltersNestedInput
@@ -14316,6 +14338,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
     fieldId?: NullableStringFieldUpdateOperationsInput | string | null
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
@@ -14323,11 +14346,13 @@ export namespace Prisma {
     id?: string
     viewId: string
     fieldId?: string | null
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type ViewFilterUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
@@ -14335,6 +14360,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
     fieldId?: NullableStringFieldUpdateOperationsInput | string | null
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
@@ -14905,6 +14931,7 @@ export namespace Prisma {
     id?: SortOrder
     viewId?: SortOrder
     fieldId?: SortOrder
+    operator?: SortOrder
     value?: SortOrder
   }
 
@@ -14912,12 +14939,14 @@ export namespace Prisma {
     id?: SortOrder
     viewId?: SortOrder
     fieldId?: SortOrder
+    operator?: SortOrder
   }
 
   export type ViewFilterMinOrderByAggregateInput = {
     id?: SortOrder
     viewId?: SortOrder
     fieldId?: SortOrder
+    operator?: SortOrder
   }
 
   export type EnumSortDirectionFilter<$PrismaModel = never> = {
@@ -16614,6 +16643,7 @@ export namespace Prisma {
 
   export type ViewFilterCreateWithoutFieldInput = {
     id?: string
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
     view: ViewCreateNestedOneWithoutFiltersInput
   }
@@ -16621,6 +16651,7 @@ export namespace Prisma {
   export type ViewFilterUncheckedCreateWithoutFieldInput = {
     id?: string
     viewId: string
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
@@ -16739,6 +16770,7 @@ export namespace Prisma {
     id?: StringFilter<"ViewFilter"> | string
     viewId?: StringFilter<"ViewFilter"> | string
     fieldId?: StringNullableFilter<"ViewFilter"> | string | null
+    operator?: StringFilter<"ViewFilter"> | string
     value?: JsonNullableFilter<"ViewFilter">
   }
 
@@ -17054,6 +17086,7 @@ export namespace Prisma {
 
   export type ViewFilterCreateWithoutViewInput = {
     id?: string
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
     field?: FieldCreateNestedOneWithoutViewFiltersInput
   }
@@ -17061,6 +17094,7 @@ export namespace Prisma {
   export type ViewFilterUncheckedCreateWithoutViewInput = {
     id?: string
     fieldId?: string | null
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
@@ -17617,6 +17651,7 @@ export namespace Prisma {
   export type ViewFilterCreateManyFieldInput = {
     id?: string
     viewId: string
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
@@ -17644,6 +17679,7 @@ export namespace Prisma {
 
   export type ViewFilterUpdateWithoutFieldInput = {
     id?: StringFieldUpdateOperationsInput | string
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
     view?: ViewUpdateOneRequiredWithoutFiltersNestedInput
   }
@@ -17651,12 +17687,14 @@ export namespace Prisma {
   export type ViewFilterUncheckedUpdateWithoutFieldInput = {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type ViewFilterUncheckedUpdateManyWithoutFieldInput = {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
@@ -17704,6 +17742,7 @@ export namespace Prisma {
   export type ViewFilterCreateManyViewInput = {
     id?: string
     fieldId?: string | null
+    operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
@@ -17716,6 +17755,7 @@ export namespace Prisma {
 
   export type ViewFilterUpdateWithoutViewInput = {
     id?: StringFieldUpdateOperationsInput | string
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
     field?: FieldUpdateOneWithoutViewFiltersNestedInput
   }
@@ -17723,12 +17763,14 @@ export namespace Prisma {
   export type ViewFilterUncheckedUpdateWithoutViewInput = {
     id?: StringFieldUpdateOperationsInput | string
     fieldId?: NullableStringFieldUpdateOperationsInput | string | null
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type ViewFilterUncheckedUpdateManyWithoutViewInput = {
     id?: StringFieldUpdateOperationsInput | string
     fieldId?: NullableStringFieldUpdateOperationsInput | string | null
+    operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
   }
 

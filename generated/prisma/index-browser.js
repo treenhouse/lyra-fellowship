@@ -182,6 +182,7 @@ exports.Prisma.ViewFilterScalarFieldEnum = {
   id: 'id',
   viewId: 'viewId',
   fieldId: 'fieldId',
+  operator: 'operator',
   value: 'value'
 };
 

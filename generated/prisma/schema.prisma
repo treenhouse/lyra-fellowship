@@ -126,10 +126,11 @@ model View {
 }
 
 model ViewFilter {
-  id      String  @id @default(uuid())
-  viewId  String
-  fieldId String?
-  value   Json?
+  id       String  @id @default(uuid())
+  viewId   String
+  fieldId  String?
+  operator String  @default("equals")
+  value    Json?
 
   view  View   @relation(fields: [viewId], references: [id], onDelete: Cascade)
   field Field? @relation(fields: [fieldId], references: [id])

@@ -20,6 +20,22 @@ type CellValueRow     = RecordRow["cells"][number];
 type FieldRow         = TableWithMeta["fields"][number];
 type ViewRow          = TableWithMeta["views"][number];
 
+// ─── types for filter/sort UI ─────────────────────────────────────────────────
+type ViewConfig  = NonNullable<RouterOutputs["view"]["getWithConfig"]>;
+type ActiveFilter = ViewConfig["filters"][number];
+type ActiveSort   = ViewConfig["sorts"][number];
+
+const FILTER_OPERATORS = [
+  { value: "equals",       label: "is"           },
+  { value: "not_equals",   label: "is not"       },
+  { value: "contains",     label: "contains"     },
+  { value: "not_contains", label: "does not contain" },
+  { value: "is_empty",     label: "is empty"     },
+  { value: "is_not_empty", label: "is not empty" },
+] as const;
+
+type FilterOperator = typeof FILTER_OPERATORS[number]["value"];
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 const COL_WIDTH     = 180;
 const ROW_HEIGHT    = 32;
@@ -34,6 +50,260 @@ function getCellDisplay(record: RecordRow, fieldId: string): string {
   if (typeof v === "number")  return String(v);
   if (typeof v === "boolean") return String(v);
   return "";
+}
+
+// ─── Filter Panel ─────────────────────────────────────────────────────────────
+function FilterPanel({
+  viewId,
+  fields,
+  onClose,
+}: {
+  viewId:  string;
+  fields:  FieldRow[];
+  onClose: () => void;
+}) {
+  const utils = api.useUtils();
+
+  const { data: viewConfig } = api.view.getWithConfig.useQuery({ id: viewId });
+
+  const upsertFilter = api.view.upsertFilter.useMutation({
+    onSuccess: () => {
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate();
+    },
+  });
+
+  const deleteFilter = api.view.deleteFilter.useMutation({
+    onSuccess: () => {
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate();
+    },
+  });
+
+  function addFilter() {
+    if (!fields[0]) return;
+    upsertFilter.mutate({
+      viewId,
+      fieldId:  fields[0].id,
+      operator: "equals",
+      value:    "",
+    });
+  }
+
+  function updateFilter(filter: ActiveFilter, patch: {
+    fieldId?: string;
+    operator?: FilterOperator;
+    value?: string | number | null;
+  }) {
+    upsertFilter.mutate({
+      id:       filter.id,
+      viewId,
+      fieldId:  patch.fieldId  ?? filter.fieldId  ?? fields[0]!.id,
+      operator: patch.operator ?? (filter.value as FilterOperator) ?? "equals",
+      value:    "value" in patch ? patch.value : (filter.value as string | number | null),
+    });
+  }
+
+  const filters = viewConfig?.filters ?? [];
+
+  return (
+    <div data-panel="filter" className="absolute top-full left-0 mt-1 z-40 w-[520px] bg-white rounded-xl shadow-xl border border-gray-200 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[13px] font-semibold text-gray-700">
+          {filters.length === 0 ? "No filters applied" : `${filters.length} filter${filters.length > 1 ? "s" : ""}`}
+        </span>
+        <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400"><X size={14} /></button>
+      </div>
+
+      {filters.length === 0 && (
+        <p className="text-[12px] text-gray-400 mb-3">
+          Show records in this view that match the conditions below.
+        </p>
+      )}
+
+      <div className="space-y-2 mb-3">
+        {filters.map((filter, i) => {
+          const needsValue = !["is_empty", "is_not_empty"].includes(
+            (filter.value as string) ?? ""
+          );
+          const field = fields.find((f) => f.id === filter.fieldId);
+
+          return (
+            <div key={filter.id} className="flex items-center gap-2">
+              {/* WHERE / AND label */}
+              <span className="text-[11px] text-gray-400 w-8 text-right flex-shrink-0">
+                {i === 0 ? "Where" : "And"}
+              </span>
+
+              {/* Field selector */}
+              <select
+                value={filter.fieldId ?? ""}
+                onChange={(e) => updateFilter(filter, { fieldId: e.target.value })}
+                className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                {fields.map((f) => (
+                  <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+              </select>
+
+              {/* Operator selector */}
+              <select
+                value={(filter.value as string) ?? "equals"}
+                onChange={(e) => updateFilter(filter, { operator: e.target.value as FilterOperator })}
+                className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                {FILTER_OPERATORS.map((op) => (
+                  <option key={op.value} value={op.value}>{op.label}</option>
+                ))}
+              </select>
+
+              {/* Value input */}
+              {needsValue && (
+                <input
+                  defaultValue={String(filter.value ?? "")}
+                  onBlur={(e) => updateFilter(filter, { value: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && updateFilter(filter, { value: (e.target as HTMLInputElement).value })}
+                  placeholder={`Enter ${field?.type === "number" ? "number" : "text"}...`}
+                  type={field?.type === "number" ? "number" : "text"}
+                  className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )}
+
+              {/* Delete filter */}
+              <button
+                onClick={() => deleteFilter.mutate({ id: filter.id })}
+                className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 flex-shrink-0"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={addFilter}
+        disabled={upsertFilter.isPending}
+        className="flex items-center gap-1.5 text-[12px] text-blue-600 hover:text-blue-700 font-medium"
+      >
+        <Plus size={13} /> Add condition
+      </button>
+    </div>
+  );
+}
+
+// ─── Sort Panel ───────────────────────────────────────────────────────────────
+function SortPanel({
+  viewId,
+  fields,
+  onClose,
+}: {
+  viewId:  string;
+  fields:  FieldRow[];
+  onClose: () => void;
+}) {
+  const utils = api.useUtils();
+
+  const { data: viewConfig } = api.view.getWithConfig.useQuery({ id: viewId });
+
+  const upsertSort = api.view.upsertSort.useMutation({
+    onSuccess: () => {
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate();
+    },
+  });
+
+  const deleteSort = api.view.deleteSort.useMutation({
+    onSuccess: () => {
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate();
+    },
+  });
+
+  function addSort() {
+    if (!fields[0]) return;
+    // Don't add duplicate field sorts
+    const alreadySorted = viewConfig?.sorts.map((s) => s.fieldId) ?? [];
+    const nextField = fields.find((f) => !alreadySorted.includes(f.id));
+    if (!nextField) return;
+    upsertSort.mutate({
+      viewId,
+      fieldId:   nextField.id,
+      direction: "asc",
+      order:     viewConfig?.sorts.length ?? 0,
+    });
+  }
+
+  const sorts = viewConfig?.sorts ?? [];
+
+  return (
+    <div data-panel="sort" className="absolute top-full left-0 mt-1 z-40 w-[400px] bg-white rounded-xl shadow-xl border border-gray-200 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[13px] font-semibold text-gray-700">
+          {sorts.length === 0 ? "No sorts applied" : `${sorts.length} sort${sorts.length > 1 ? "s" : ""}`}
+        </span>
+        <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400"><X size={14} /></button>
+      </div>
+
+      {sorts.length === 0 && (
+        <p className="text-[12px] text-gray-400 mb-3">
+          Sort records in this view by one or more fields.
+        </p>
+      )}
+
+      <div className="space-y-2 mb-3">
+        {sorts.map((sort, i) => (
+          <div key={sort.id} className="flex items-center gap-2">
+            <span className="text-[11px] text-gray-400 w-8 text-right flex-shrink-0">
+              {i === 0 ? "Sort by" : "Then by"}
+            </span>
+
+            {/* Field selector */}
+            <select
+              value={sort.fieldId}
+              onChange={(e) => upsertSort.mutate({
+                id: sort.id, viewId, fieldId: e.target.value,
+                direction: sort.direction, order: sort.order ?? i,
+              })}
+              className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              {fields.map((f) => (
+                <option key={f.id} value={f.id}>{f.name}</option>
+              ))}
+            </select>
+
+            {/* Direction toggle */}
+            <select
+              value={sort.direction}
+              onChange={(e) => upsertSort.mutate({
+                id: sort.id, viewId, fieldId: sort.fieldId,
+                direction: e.target.value as "asc" | "desc", order: sort.order ?? i,
+              })}
+              className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+
+            <button
+              onClick={() => deleteSort.mutate({ id: sort.id })}
+              className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 flex-shrink-0"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={addSort}
+        disabled={upsertSort.isPending || sorts.length >= fields.length}
+        className="flex items-center gap-1.5 text-[12px] text-blue-600 hover:text-blue-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Plus size={13} /> Add sort
+      </button>
+    </div>
+  );
 }
 
 // ─── Add Table Modal ──────────────────────────────────────────────────────────
@@ -531,8 +801,31 @@ export default function BasePage() {
   const [search,        setSearch]        = useState("");
   const [showSearch,    setShowSearch]    = useState(false);
   const [isSaving,      setIsSaving]      = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [sortOpen,   setSortOpen]   = useState(false);
 
   const { data: base, isLoading: baseLoading } = api.base.getById.useQuery({ id: baseId });
+
+  const { data: viewConfig } = api.view.getWithConfig.useQuery(
+    { id: activeViewId! },
+    { enabled: !!activeViewId }
+  );
+
+  const activeFilterCount = viewConfig?.filters.length ?? 0;
+  const activeSortCount   = viewConfig?.sorts.length   ?? 0;
+
+  // Close filter/sort panels on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-panel]")) {
+        setFilterOpen(false);
+        setSortOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   useEffect(() => {
     if (base?.tables?.length && !activeTableId) setActiveTableId(base.tables[0]!.id);
@@ -670,9 +963,7 @@ export default function BasePage() {
         {/* Toolbar actions matching Airtable exactly */}
         {[
           { icon: EyeOff,      label: "Hide fields" },
-          { icon: Filter,      label: "Filter"      },
           { icon: Users,       label: "Group"       },
-          { icon: ArrowUpDown, label: "Sort"        },
           { icon: Palette,     label: "Color"       },
           { icon: AlignJustify,label: "Row height"  },
         ].map(({ icon: Icon, label }) => (
@@ -680,6 +971,49 @@ export default function BasePage() {
             <Icon size={13} /> {label}
           </button>
         ))}
+
+        <div className="relative">
+          <button
+              onClick={() => { setFilterOpen((v) => !v); setSortOpen(false); }}
+              data-panel="filter"
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] hover:bg-gray-100 whitespace-nowrap ${
+              filterOpen ? "bg-blue-50 text-blue-600" : "text-gray-600"
+            }`}
+          >
+            <Filter size={13} /> Filter
+            {activeFilterCount > 0 && (
+              <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+          {filterOpen && activeViewId && table && (
+            <FilterPanel
+              viewId={activeViewId}
+              fields={table.fields}
+              onClose={() => setFilterOpen(false)}
+            />
+          )}
+        </div>
+
+        <div className="relative">
+          <button
+              onClick={() => { setSortOpen((v) => !v); setFilterOpen(false); }}
+              data-panel="sort"
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] hover:bg-gray-100 whitespace-nowrap ${
+              sortOpen ? "bg-blue-50 text-blue-600" : "text-gray-600"
+            }`}
+          >
+            <ArrowUpDown size={13} /> Sort
+          </button>
+          {sortOpen && activeViewId && table && (
+            <SortPanel
+              viewId={activeViewId}
+              fields={table.fields}
+              onClose={() => setSortOpen(false)}
+            />
+          )}
+        </div>
 
         <button className="flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100">
           <Share2 size={13} /> Share and sync
