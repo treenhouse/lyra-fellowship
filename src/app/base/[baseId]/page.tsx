@@ -99,7 +99,7 @@ function FilterPanel({
       id:       filter.id,
       viewId,
       fieldId:  patch.fieldId  ?? filter.fieldId  ?? fields[0]!.id,
-      operator: patch.operator ?? (filter.value as FilterOperator) ?? "equals",
+      operator: patch.operator ?? (filter.operator as FilterOperator) ?? "equals",
       value:    "value" in patch ? patch.value : (filter.value as string | number | null),
     });
   }
@@ -123,10 +123,17 @@ function FilterPanel({
 
       <div className="space-y-2 mb-3">
         {filters.map((filter, i) => {
-          const needsValue = !["is_empty", "is_not_empty"].includes(
-            (filter.value as string) ?? ""
-          );
+          const needsValue = !["is_empty", "is_not_empty"].includes(filter.operator ?? "equals");
           const field = fields.find((f) => f.id === filter.fieldId);
+
+          // Safely stringify filter.value for use in inputs to avoid "[object Object]"
+          const defaultFilterValue = (() => {
+            const v = filter.value;
+            if (v == null) return "";
+            if (typeof v === "string") return v;
+            if (typeof v === "number" || typeof v === "boolean") return String(v);
+            try { return JSON.stringify(v); } catch { return ""; }
+          })();
 
           return (
             <div key={filter.id} className="flex items-center gap-2">
@@ -148,7 +155,7 @@ function FilterPanel({
 
               {/* Operator selector */}
               <select
-                value={(filter.value as string) ?? "equals"}
+                value={filter.operator ?? "equals"}
                 onChange={(e) => updateFilter(filter, { operator: e.target.value as FilterOperator })}
                 className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
@@ -160,7 +167,7 @@ function FilterPanel({
               {/* Value input */}
               {needsValue && (
                 <input
-                  defaultValue={String(filter.value ?? "")}
+                  defaultValue={defaultFilterValue}
                   onBlur={(e) => updateFilter(filter, { value: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && updateFilter(filter, { value: (e.target as HTMLInputElement).value })}
                   placeholder={`Enter ${field?.type === "number" ? "number" : "text"}...`}
