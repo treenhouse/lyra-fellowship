@@ -132,7 +132,7 @@ function BaseMenu({ base, onRename, onClose }: { base: BaseWithCount; onRename: 
         </button>
       ) : (
         <div className="px-3 py-2">
-          <p className="text-gray-500 text-[12px] mb-2">Delete "{base.name}"? This can't be undone.</p>
+          <p className="text-gray-500 text-[12px] mb-2">Delete &quot;{base.name}&quot;? This can&apos;t be undone.</p>
           <div className="flex gap-2">
             <button onClick={onClose} className="flex-1 px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 text-[12px]">Cancel</button>
             <button
@@ -240,7 +240,7 @@ export default function HomePage() {
   const [viewMode,  setViewMode]  = useState<"list" | "grid">("list");
 
   const { data, isLoading } = api.base.list.useQuery();
-  const bases    = (data ?? []) as BaseWithCount[];
+  const bases    = (data ?? []);
   const filtered = bases.filter((b) => b.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -347,7 +347,7 @@ export default function HomePage() {
           {/* Bases list/grid */}
           {isLoading ? (
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-              {[...Array(4)].map((_, i) => (
+              {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
                   <div className="w-10 h-10 rounded-lg bg-gray-200 flex-shrink-0" />
                   <div className="flex-1 space-y-1.5">
@@ -363,7 +363,7 @@ export default function HomePage() {
                 <Search size={22} className="text-gray-300" />
               </div>
               {search ? (
-                <><p className="text-[15px] font-semibold text-gray-700">No bases match "{search}"</p><p className="text-[13px] text-gray-400 mt-1">Try a different search</p></>
+                <><p className="text-[15px] font-semibold text-gray-700">No bases match &quot;{search}&quot;</p><p className="text-[13px] text-gray-400 mt-1">Try a different search</p></>
               ) : (
                 <><p className="text-[15px] font-semibold text-gray-700">No bases yet</p><button onClick={() => setCreating(true)} className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700"><Plus size={14} /> Create a base</button></>
               )}

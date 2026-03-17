@@ -212,7 +212,7 @@ function FieldHeader({ field, tableId }: { field: FieldRow; tableId: string }) {
             <hr className="my-1 border-gray-100" />
             {confirming ? (
               <div className="px-3 py-2">
-                <p className="text-gray-500 mb-2">Delete "{field.name}"?</p>
+                <p className="text-gray-500 mb-2">Delete &quot;{field.name}&quot;?</p>
                 <div className="flex gap-1.5">
                   <button onClick={() => setConfirming(false)} className="flex-1 px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50">No</button>
                   <button onClick={() => del.mutate({ id: field.id })} disabled={del.isPending}
