@@ -20,22 +20,6 @@ type CellValueRow     = RecordRow["cells"][number];
 type FieldRow         = TableWithMeta["fields"][number];
 type ViewRow          = TableWithMeta["views"][number];
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const COL_WIDTH     = 180;
-const ROW_HEIGHT    = 32;
-const ROW_NUM_WIDTH = 52;
-
-// ─── Cell value display ───────────────────────────────────────────────────────
-function getCellDisplay(record: RecordRow, fieldId: string): string {
-  const cell = record.cells.find((c: CellValueRow) => c.fieldId === fieldId);
-  const v = cell?.value;
-  if (v === null || v === undefined) return "";
-  if (typeof v === "string")  return v;
-  if (typeof v === "number")  return String(v);
-  if (typeof v === "boolean") return String(v);
-  return "";
-}
-
 // ─── types for filter/sort UI ─────────────────────────────────────────────────
 type ViewConfig  = NonNullable<RouterOutputs["view"]["getWithConfig"]>;
 type ActiveFilter = ViewConfig["filters"][number];
@@ -52,14 +36,23 @@ const FILTER_OPERATORS = [
 
 type FilterOperator = typeof FILTER_OPERATORS[number]["value"];
 
-// ─── Filter Panel ─────────────────────────────────────────────────────────────
-type LocalFilter = {
-  id?:      string;   // present if it already exists in DB
-  fieldId:  string;
-  operator: FilterOperator;
-  value:    string;
-};
+// ─── Constants ────────────────────────────────────────────────────────────────
+const COL_WIDTH     = 180;
+const ROW_HEIGHT    = 32;
+const ROW_NUM_WIDTH = 52;
 
+// ─── Cell value display ───────────────────────────────────────────────────────
+function getCellDisplay(record: RecordRow, fieldId: string): string {
+  const cell = record.cells.find((c: CellValueRow) => c.fieldId === fieldId);
+  const v = cell?.value;
+  if (v === null || v === undefined) return "";
+  if (typeof v === "string")  return v;
+  if (typeof v === "number")  return String(v);
+  if (typeof v === "boolean") return String(v);
+  return "";
+}
+
+// ─── Filter Panel ─────────────────────────────────────────────────────────────
 function FilterPanel({
   viewId,
   fields,
@@ -70,214 +63,143 @@ function FilterPanel({
   onClose: () => void;
 }) {
   const utils = api.useUtils();
-  const { data: viewConfig, isLoading } = api.view.getWithConfig.useQuery({ id: viewId });
 
-  // Local draft state — no mutations until Apply is pressed
-  const [localFilters, setLocalFilters] = useState<LocalFilter[]>([]);
-  const [initialized, setInitialized]   = useState(false);
+  const { data: viewConfig } = api.view.getWithConfig.useQuery({ id: viewId });
 
-  // Sync from server once on open (not on every change)
-  useEffect(() => {
-    if (viewConfig && !initialized) {
-      setLocalFilters(
-        viewConfig.filters.map((f) => ({
-          id:       f.id,
-          fieldId:  f.fieldId ?? fields[0]?.id ?? "",
-          operator: (f.operator as FilterOperator) ?? "equals",
-          value:    f.value == null ? "" : String(f.value),
-        }))
-      );
-      setInitialized(true);
-    }
-  }, [viewConfig, initialized, fields]);
+  const upsertFilter = api.view.upsertFilter.useMutation({
+    onSuccess: () => {
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate();
+    },
+  });
 
-  const upsertFilter = api.view.upsertFilter.useMutation();
-  const deleteFilter = api.view.deleteFilter.useMutation();
+  const deleteFilter = api.view.deleteFilter.useMutation({
+    onSuccess: () => {
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate();
+    },
+  });
 
-  const isApplying = upsertFilter.isPending || deleteFilter.isPending;
-
-  async function applyFilters() {
-    const existing = viewConfig?.filters ?? [];
-
-    // Delete filters that were removed locally
-    const removedIds = existing
-      .filter((f) => !localFilters.some((lf) => lf.id === f.id))
-      .map((f) => f.id);
-
-    await Promise.all(removedIds.map((id) => deleteFilter.mutateAsync({ id })));
-
-    // Upsert all current local filters
-    await Promise.all(
-      localFilters.map((lf) =>
-        upsertFilter.mutateAsync({
-          id:       lf.id,
-          viewId,
-          fieldId:  lf.fieldId,
-          operator: lf.operator,
-          value:    lf.value === "" ? null : lf.value,
-        })
-      )
-    );
-
-    void utils.record.list.invalidate({ tableId: fields[0] ? undefined : undefined });
-    void utils.view.getWithConfig.invalidate({ id: viewId });
-    void utils.record.list.invalidate();
-    onClose();
+  function addFilter() {
+    if (!fields[0]) return;
+    upsertFilter.mutate({
+      viewId,
+      fieldId:  fields[0].id,
+      operator: "equals",
+      value:    "",
+    });
   }
 
-  function addLocalFilter() {
-    setLocalFilters((prev) => [
-      ...prev,
-      {
-        fieldId:  fields[0]?.id ?? "",
-        operator: "equals",
-        value:    "",
-      },
-    ]);
+  function updateFilter(filter: ActiveFilter, patch: {
+    fieldId?: string;
+    operator?: FilterOperator;
+    value?: string | number | null;
+  }) {
+    upsertFilter.mutate({
+      id:       filter.id,
+      viewId,
+      fieldId:  patch.fieldId  ?? filter.fieldId  ?? fields[0]!.id,
+      operator: patch.operator ?? (filter.operator as FilterOperator) ?? "equals",
+      value:    "value" in patch ? patch.value : (filter.value as string | number | null),
+    });
   }
 
-  function updateLocalFilter(index: number, patch: Partial<LocalFilter>) {
-    setLocalFilters((prev) =>
-      prev.map((f, i) => (i === index ? { ...f, ...patch } : f))
-    );
-  }
-
-  function removeLocalFilter(index: number) {
-    setLocalFilters((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  const noValueOperators = ["is_empty", "is_not_empty"];
+  const filters = viewConfig?.filters ?? [];
 
   return (
-    <div className="absolute top-full left-0 mt-1 z-40 w-[540px] bg-white rounded-xl shadow-xl border border-gray-200 p-4">
+    <div data-panel="filter" className="absolute top-full left-0 mt-1 z-40 w-[520px] bg-white rounded-xl shadow-xl border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-3">
         <span className="text-[13px] font-semibold text-gray-700">
-          Filters
+          {filters.length === 0 ? "No filters applied" : `${filters.length} filter${filters.length > 1 ? "s" : ""}`}
         </span>
-        <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400">
-          <X size={14} />
-        </button>
+        <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400"><X size={14} /></button>
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-4">
-          <Loader2 size={16} className="animate-spin text-gray-400" />
-        </div>
-      ) : (
-        <>
-          {localFilters.length === 0 && (
-            <p className="text-[12px] text-gray-400 mb-3">
-              Show records that match the conditions below. Press Apply to filter.
-            </p>
-          )}
+      {filters.length === 0 && (
+        <p className="text-[12px] text-gray-400 mb-3">
+          Show records in this view that match the conditions below.
+        </p>
+      )}
 
-          <div className="space-y-2 mb-3">
-            {localFilters.map((filter, i) => {
-              const field = fields.find((f) => f.id === filter.fieldId);
-              const needsValue = !noValueOperators.includes(filter.operator);
+      <div className="space-y-2 mb-3">
+        {filters.map((filter, i) => {
+          const needsValue = !["is_empty", "is_not_empty"].includes(filter.operator ?? "equals");
+          const field = fields.find((f) => f.id === filter.fieldId);
 
-              return (
-                <div key={i} className="flex items-center gap-2">
-                  {/* WHERE / AND label */}
-                  <span className="text-[11px] text-gray-400 w-10 text-right flex-shrink-0">
-                    {i === 0 ? "Where" : "And"}
-                  </span>
+          // Safely stringify filter.value for use in inputs to avoid "[object Object]"
+          const defaultFilterValue = (() => {
+            const v = filter.value;
+            if (v == null) return "";
+            if (typeof v === "string") return v;
+            if (typeof v === "number" || typeof v === "boolean") return String(v);
+            try { return JSON.stringify(v); } catch { return ""; }
+          })();
 
-                  {/* Field */}
-                  <select
-                    value={filter.fieldId}
-                    onChange={(e) => updateLocalFilter(i, { fieldId: e.target.value })}
-                    className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                  >
-                    {fields.map((f) => (
-                      <option key={f.id} value={f.id}>{f.name}</option>
-                    ))}
-                  </select>
+          return (
+            <div key={filter.id} className="flex items-center gap-2">
+              {/* WHERE / AND label */}
+              <span className="text-[11px] text-gray-400 w-8 text-right flex-shrink-0">
+                {i === 0 ? "Where" : "And"}
+              </span>
 
-                  {/* Operator */}
-                  <select
-                    value={filter.operator}
-                    onChange={(e) => updateLocalFilter(i, { operator: e.target.value as FilterOperator })}
-                    className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                  >
-                    {FILTER_OPERATORS
-                      .filter((op) =>
-                        // Hide numeric-only operators for text fields
-                        field?.type === "number"
-                          ? true
-                          : !["gt", "gte", "lt", "lte"].includes(op.value)
-                      )
-                      .map((op) => (
-                        <option key={op.value} value={op.value}>{op.label}</option>
-                      ))}
-                  </select>
-
-                  {/* Value */}
-                  {needsValue && (
-                    <input
-                      value={filter.value}
-                      onChange={(e) => updateLocalFilter(i, { value: e.target.value })}
-                      onKeyDown={(e) => e.key === "Enter" && void applyFilters()}
-                      placeholder={field?.type === "number" ? "Enter number…" : "Enter value…"}
-                      type={field?.type === "number" ? "number" : "text"}
-                      className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  )}
-
-                  {/* Remove */}
-                  <button
-                    onClick={() => removeLocalFilter(i)}
-                    className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 flex-shrink-0"
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            <button
-              onClick={addLocalFilter}
-              className="flex items-center gap-1.5 text-[12px] text-blue-600 hover:text-blue-700 font-medium"
-            >
-              <Plus size={13} /> Add condition
-            </button>
-
-            <div className="flex items-center gap-2">
-              {localFilters.length > 0 && (
-                <button
-                  onClick={() => setLocalFilters([])}
-                  className="px-3 py-1.5 rounded-lg text-[12px] text-gray-500 hover:bg-gray-100"
-                >
-                  Clear all
-                </button>
-              )}
-              <button
-                onClick={() => void applyFilters()}
-                disabled={isApplying}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"
+              {/* Field selector */}
+              <select
+                value={filter.fieldId ?? ""}
+                onChange={(e) => updateFilter(filter, { fieldId: e.target.value })}
+                className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                {isApplying && <Loader2 size={11} className="animate-spin" />}
-                Apply filter
+                {fields.map((f) => (
+                  <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+              </select>
+
+              {/* Operator selector */}
+              <select
+                value={filter.operator ?? "equals"}
+                onChange={(e) => updateFilter(filter, { operator: e.target.value as FilterOperator })}
+                className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                {FILTER_OPERATORS.map((op) => (
+                  <option key={op.value} value={op.value}>{op.label}</option>
+                ))}
+              </select>
+
+              {/* Value input */}
+              {needsValue && (
+                <input
+                  defaultValue={defaultFilterValue}
+                  onBlur={(e) => updateFilter(filter, { value: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && updateFilter(filter, { value: (e.target as HTMLInputElement).value })}
+                  placeholder={`Enter ${field?.type === "number" ? "number" : "text"}...`}
+                  type={field?.type === "number" ? "number" : "text"}
+                  className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )}
+
+              {/* Delete filter */}
+              <button
+                onClick={() => deleteFilter.mutate({ id: filter.id })}
+                className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 flex-shrink-0"
+              >
+                <X size={13} />
               </button>
             </div>
-          </div>
-        </>
-      )}
+          );
+        })}
+      </div>
+
+      <button
+        onClick={addFilter}
+        disabled={upsertFilter.isPending}
+        className="flex items-center gap-1.5 text-[12px] text-blue-600 hover:text-blue-700 font-medium"
+      >
+        <Plus size={13} /> Add condition
+      </button>
     </div>
   );
 }
 
 // ─── Sort Panel ───────────────────────────────────────────────────────────────
-type LocalSort = {
-  id?:       string;
-  fieldId:   string;
-  direction: "asc" | "desc";
-  order:     number;
-};
-
 function SortPanel({
   viewId,
   fields,
@@ -288,163 +210,105 @@ function SortPanel({
   onClose: () => void;
 }) {
   const utils = api.useUtils();
-  const { data: viewConfig, isLoading } = api.view.getWithConfig.useQuery({ id: viewId });
 
-  const [localSorts, setLocalSorts]   = useState<LocalSort[]>([]);
-  const [initialized, setInitialized] = useState(false);
+  const { data: viewConfig } = api.view.getWithConfig.useQuery({ id: viewId });
 
-  useEffect(() => {
-    if (viewConfig && !initialized) {
-      setLocalSorts(
-        viewConfig.sorts.map((s) => ({
-          id:        s.id,
-          fieldId:   s.fieldId,
-          direction: s.direction,
-          order:     s.order ?? 0,
-        }))
-      );
-      setInitialized(true);
-    }
-  }, [viewConfig, initialized]);
+  const upsertSort = api.view.upsertSort.useMutation({
+    onSuccess: () => {
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate();
+    },
+  });
 
-  const upsertSort = api.view.upsertSort.useMutation();
-  const deleteSort = api.view.deleteSort.useMutation();
+  const deleteSort = api.view.deleteSort.useMutation({
+    onSuccess: () => {
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate();
+    },
+  });
 
-  const isApplying = upsertSort.isPending || deleteSort.isPending;
-
-  async function applySorts() {
-    const existing = viewConfig?.sorts ?? [];
-
-    const removedIds = existing
-      .filter((s) => !localSorts.some((ls) => ls.id === s.id))
-      .map((s) => s.id);
-
-    await Promise.all(removedIds.map((id) => deleteSort.mutateAsync({ id })));
-
-    await Promise.all(
-      localSorts.map((ls, i) =>
-        upsertSort.mutateAsync({
-          id:        ls.id,
-          viewId,
-          fieldId:   ls.fieldId,
-          direction: ls.direction,
-          order:     i,
-        })
-      )
-    );
-
-    void utils.view.getWithConfig.invalidate({ id: viewId });
-    void utils.record.list.invalidate();
-    onClose();
-  }
-
-  function addLocalSort() {
-    const usedFieldIds = localSorts.map((s) => s.fieldId);
-    const nextField = fields.find((f) => !usedFieldIds.includes(f.id));
+  function addSort() {
+    if (!fields[0]) return;
+    // Don't add duplicate field sorts
+    const alreadySorted = viewConfig?.sorts.map((s) => s.fieldId) ?? [];
+    const nextField = fields.find((f) => !alreadySorted.includes(f.id));
     if (!nextField) return;
-    setLocalSorts((prev) => [
-      ...prev,
-      { fieldId: nextField.id, direction: "asc", order: prev.length },
-    ]);
+    upsertSort.mutate({
+      viewId,
+      fieldId:   nextField.id,
+      direction: "asc",
+      order:     viewConfig?.sorts.length ?? 0,
+    });
   }
 
-  function updateLocalSort(index: number, patch: Partial<LocalSort>) {
-    setLocalSorts((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, ...patch } : s))
-    );
-  }
-
-  function removeLocalSort(index: number) {
-    setLocalSorts((prev) => prev.filter((_, i) => i !== index));
-  }
+  const sorts = viewConfig?.sorts ?? [];
 
   return (
-    <div className="absolute top-full left-0 mt-1 z-40 w-[380px] bg-white rounded-xl shadow-xl border border-gray-200 p-4">
+    <div data-panel="sort" className="absolute top-full left-0 mt-1 z-40 w-[400px] bg-white rounded-xl shadow-xl border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[13px] font-semibold text-gray-700">Sorts</span>
-        <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400">
-          <X size={14} />
-        </button>
+        <span className="text-[13px] font-semibold text-gray-700">
+          {sorts.length === 0 ? "No sorts applied" : `${sorts.length} sort${sorts.length > 1 ? "s" : ""}`}
+        </span>
+        <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400"><X size={14} /></button>
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-4">
-          <Loader2 size={16} className="animate-spin text-gray-400" />
-        </div>
-      ) : (
-        <>
-          {localSorts.length === 0 && (
-            <p className="text-[12px] text-gray-400 mb-3">
-              Sort records by one or more fields. Press Apply to sort.
-            </p>
-          )}
-
-          <div className="space-y-2 mb-3">
-            {localSorts.map((sort, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-[11px] text-gray-400 w-10 text-right flex-shrink-0">
-                  {i === 0 ? "Sort by" : "Then by"}
-                </span>
-
-                <select
-                  value={sort.fieldId}
-                  onChange={(e) => updateLocalSort(i, { fieldId: e.target.value })}
-                  className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                >
-                  {fields.map((f) => (
-                    <option key={f.id} value={f.id}>{f.name}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={sort.direction}
-                  onChange={(e) => updateLocalSort(i, { direction: e.target.value as "asc" | "desc" })}
-                  className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                >
-                  <option value="asc">A → Z</option>
-                  <option value="desc">Z → A</option>
-                </select>
-
-                <button
-                  onClick={() => removeLocalSort(i)}
-                  className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 flex-shrink-0"
-                >
-                  <X size={13} />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            <button
-              onClick={addLocalSort}
-              disabled={localSorts.length >= fields.length}
-              className="flex items-center gap-1.5 text-[12px] text-blue-600 hover:text-blue-700 font-medium disabled:opacity-40"
-            >
-              <Plus size={13} /> Add sort
-            </button>
-
-            <div className="flex items-center gap-2">
-              {localSorts.length > 0 && (
-                <button
-                  onClick={() => setLocalSorts([])}
-                  className="px-3 py-1.5 rounded-lg text-[12px] text-gray-500 hover:bg-gray-100"
-                >
-                  Clear all
-                </button>
-              )}
-              <button
-                onClick={() => void applySorts()}
-                disabled={isApplying}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"
-              >
-                {isApplying && <Loader2 size={11} className="animate-spin" />}
-                Apply sort
-              </button>
-            </div>
-          </div>
-        </>
+      {sorts.length === 0 && (
+        <p className="text-[12px] text-gray-400 mb-3">
+          Sort records in this view by one or more fields.
+        </p>
       )}
+
+      <div className="space-y-2 mb-3">
+        {sorts.map((sort, i) => (
+          <div key={sort.id} className="flex items-center gap-2">
+            <span className="text-[11px] text-gray-400 w-8 text-right flex-shrink-0">
+              {i === 0 ? "Sort by" : "Then by"}
+            </span>
+
+            {/* Field selector */}
+            <select
+              value={sort.fieldId}
+              onChange={(e) => upsertSort.mutate({
+                id: sort.id, viewId, fieldId: e.target.value,
+                direction: sort.direction, order: sort.order ?? i,
+              })}
+              className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              {fields.map((f) => (
+                <option key={f.id} value={f.id}>{f.name}</option>
+              ))}
+            </select>
+
+            {/* Direction toggle */}
+            <select
+              value={sort.direction}
+              onChange={(e) => upsertSort.mutate({
+                id: sort.id, viewId, fieldId: sort.fieldId,
+                direction: e.target.value as "asc" | "desc", order: sort.order ?? i,
+              })}
+              className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+
+            <button
+              onClick={() => deleteSort.mutate({ id: sort.id })}
+              className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 flex-shrink-0"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={addSort}
+        disabled={upsertSort.isPending || sorts.length >= fields.length}
+        className="flex items-center gap-1.5 text-[12px] text-blue-600 hover:text-blue-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Plus size={13} /> Add sort
+      </button>
     </div>
   );
 }
@@ -457,9 +321,8 @@ function AddTableModal({ baseId, onClose, onCreated }: {
   const utils = api.useUtils();
   const create = api.table.create.useMutation({
     onSuccess: (t) => {
-      void utils.base.getById.invalidate({ id: baseId }); 
-      onCreated(t.id); 
-      onClose(); 
+     void utils.base.getById.invalidate({ id: baseId }); 
+      onCreated(t.id); onClose(); 
     },
   });
   return (
@@ -526,10 +389,6 @@ function AddFieldModal({ tableId, onClose }: { tableId: string; onClose: () => v
       utils.table.getById.setData({ id: tableId }, context?.previous);
     },
 
-    onSuccess: () => {
-      onClose();
-    },
-
     onSettled: () => {
       void utils.table.getById.invalidate({ id: tableId });
       void utils.record.list.invalidate({ tableId });
@@ -546,12 +405,7 @@ function AddFieldModal({ tableId, onClose }: { tableId: string; onClose: () => v
         <label className="block text-[12px] font-medium text-gray-600 mb-1">Name</label>
         <input
           autoFocus value={name} onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && name.trim()) {
-              e.preventDefault();
-              create.mutate({ tableId, name: name.trim(), type });
-            }
-          }}
+          onKeyDown={(e) => e.key === "Enter" && name.trim() && create.mutate({ tableId, name: name.trim(), type })}
           placeholder="Field name"
           className="w-full px-3 py-2 rounded-lg border border-gray-300 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
         />
@@ -959,7 +813,6 @@ export default function BasePage() {
 
   const { data: base, isLoading: baseLoading } = api.base.getById.useQuery({ id: baseId });
 
-  // Load active view config in BasePage to show badge counts
   const { data: viewConfig } = api.view.getWithConfig.useQuery(
     { id: activeViewId! },
     { enabled: !!activeViewId }
@@ -967,6 +820,19 @@ export default function BasePage() {
 
   const activeFilterCount = viewConfig?.filters.length ?? 0;
   const activeSortCount   = viewConfig?.sorts.length   ?? 0;
+
+  // Close filter/sort panels on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-panel]")) {
+        setFilterOpen(false);
+        setSortOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   useEffect(() => {
     if (base?.tables?.length && !activeTableId) setActiveTableId(base.tables[0]!.id);
@@ -978,19 +844,6 @@ export default function BasePage() {
   useEffect(() => {
     if (table?.views?.length) setActiveViewId(table.views[0]!.id);
   }, [table?.id]);
-
-  // // Close filter/sort panels on outside click
-  // useEffect(() => {
-  //   function handleClick(e: MouseEvent) {
-  //     const target = e.target as HTMLElement;
-  //     if (!target.closest("[data-panel]")) {
-  //       setFilterOpen(false);
-  //       setSortOpen(false);
-  //     }
-  //   }
-  //   document.addEventListener("mousedown", handleClick);
-  //   return () => document.removeEventListener("mousedown", handleClick);
-  // }, []);
 
   const { data: recordData, isLoading: recordsLoading } =
     api.record.list.useQuery(
@@ -1128,7 +981,8 @@ export default function BasePage() {
 
         <div className="relative">
           <button
-            onClick={() => { setFilterOpen((v) => !v); setSortOpen(false); }}
+              onClick={() => { setFilterOpen((v) => !v); setSortOpen(false); }}
+              data-panel="filter"
             className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] hover:bg-gray-100 whitespace-nowrap ${
               filterOpen ? "bg-blue-50 text-blue-600" : "text-gray-600"
             }`}
@@ -1151,7 +1005,8 @@ export default function BasePage() {
 
         <div className="relative">
           <button
-            onClick={() => { setSortOpen((v) => !v); setFilterOpen(false); }}
+              onClick={() => { setSortOpen((v) => !v); setFilterOpen(false); }}
+              data-panel="sort"
             className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] hover:bg-gray-100 whitespace-nowrap ${
               sortOpen ? "bg-blue-50 text-blue-600" : "text-gray-600"
             }`}
@@ -1167,11 +1022,9 @@ export default function BasePage() {
           )}
         </div>
 
-        <div className="relative">
-          <button className="flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100">
-            <Share2 size={13} /> Share and sync
-          </button>
-        </div>
+        <button className="flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100">
+          <Share2 size={13} /> Share and sync
+        </button>
 
         <div className="flex-1" />
 

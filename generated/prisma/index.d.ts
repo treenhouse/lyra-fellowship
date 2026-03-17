@@ -8708,72 +8708,42 @@ export namespace Prisma {
 
   export type AggregateCellValue = {
     _count: CellValueCountAggregateOutputType | null
-    _avg: CellValueAvgAggregateOutputType | null
-    _sum: CellValueSumAggregateOutputType | null
     _min: CellValueMinAggregateOutputType | null
     _max: CellValueMaxAggregateOutputType | null
-  }
-
-  export type CellValueAvgAggregateOutputType = {
-    numberValue: number | null
-  }
-
-  export type CellValueSumAggregateOutputType = {
-    numberValue: number | null
   }
 
   export type CellValueMinAggregateOutputType = {
     recordId: string | null
     fieldId: string | null
-    textValue: string | null
-    numberValue: number | null
   }
 
   export type CellValueMaxAggregateOutputType = {
     recordId: string | null
     fieldId: string | null
-    textValue: string | null
-    numberValue: number | null
   }
 
   export type CellValueCountAggregateOutputType = {
     recordId: number
     fieldId: number
     value: number
-    textValue: number
-    numberValue: number
     _all: number
   }
 
 
-  export type CellValueAvgAggregateInputType = {
-    numberValue?: true
-  }
-
-  export type CellValueSumAggregateInputType = {
-    numberValue?: true
-  }
-
   export type CellValueMinAggregateInputType = {
     recordId?: true
     fieldId?: true
-    textValue?: true
-    numberValue?: true
   }
 
   export type CellValueMaxAggregateInputType = {
     recordId?: true
     fieldId?: true
-    textValue?: true
-    numberValue?: true
   }
 
   export type CellValueCountAggregateInputType = {
     recordId?: true
     fieldId?: true
     value?: true
-    textValue?: true
-    numberValue?: true
     _all?: true
   }
 
@@ -8815,18 +8785,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: CellValueAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: CellValueSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: CellValueMinAggregateInputType
@@ -8857,8 +8815,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: CellValueCountAggregateInputType | true
-    _avg?: CellValueAvgAggregateInputType
-    _sum?: CellValueSumAggregateInputType
     _min?: CellValueMinAggregateInputType
     _max?: CellValueMaxAggregateInputType
   }
@@ -8867,11 +8823,7 @@ export namespace Prisma {
     recordId: string
     fieldId: string
     value: JsonValue | null
-    textValue: string | null
-    numberValue: number | null
     _count: CellValueCountAggregateOutputType | null
-    _avg: CellValueAvgAggregateOutputType | null
-    _sum: CellValueSumAggregateOutputType | null
     _min: CellValueMinAggregateOutputType | null
     _max: CellValueMaxAggregateOutputType | null
   }
@@ -8894,8 +8846,6 @@ export namespace Prisma {
     recordId?: boolean
     fieldId?: boolean
     value?: boolean
-    textValue?: boolean
-    numberValue?: boolean
     record?: boolean | RecordDefaultArgs<ExtArgs>
     field?: boolean | FieldDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cellValue"]>
@@ -8904,8 +8854,6 @@ export namespace Prisma {
     recordId?: boolean
     fieldId?: boolean
     value?: boolean
-    textValue?: boolean
-    numberValue?: boolean
     record?: boolean | RecordDefaultArgs<ExtArgs>
     field?: boolean | FieldDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cellValue"]>
@@ -8914,8 +8862,6 @@ export namespace Prisma {
     recordId?: boolean
     fieldId?: boolean
     value?: boolean
-    textValue?: boolean
-    numberValue?: boolean
     record?: boolean | RecordDefaultArgs<ExtArgs>
     field?: boolean | FieldDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cellValue"]>
@@ -8924,11 +8870,9 @@ export namespace Prisma {
     recordId?: boolean
     fieldId?: boolean
     value?: boolean
-    textValue?: boolean
-    numberValue?: boolean
   }
 
-  export type CellValueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"recordId" | "fieldId" | "value" | "textValue" | "numberValue", ExtArgs["result"]["cellValue"]>
+  export type CellValueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"recordId" | "fieldId" | "value", ExtArgs["result"]["cellValue"]>
   export type CellValueInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     record?: boolean | RecordDefaultArgs<ExtArgs>
     field?: boolean | FieldDefaultArgs<ExtArgs>
@@ -8952,8 +8896,6 @@ export namespace Prisma {
       recordId: string
       fieldId: string
       value: Prisma.JsonValue | null
-      textValue: string | null
-      numberValue: number | null
     }, ExtArgs["result"]["cellValue"]>
     composites: {}
   }
@@ -9382,8 +9324,6 @@ export namespace Prisma {
     readonly recordId: FieldRef<"CellValue", 'String'>
     readonly fieldId: FieldRef<"CellValue", 'String'>
     readonly value: FieldRef<"CellValue", 'Json'>
-    readonly textValue: FieldRef<"CellValue", 'String'>
-    readonly numberValue: FieldRef<"CellValue", 'Float'>
   }
     
 
@@ -13161,9 +13101,7 @@ export namespace Prisma {
   export const CellValueScalarFieldEnum: {
     recordId: 'recordId',
     fieldId: 'fieldId',
-    value: 'value',
-    textValue: 'textValue',
-    numberValue: 'numberValue'
+    value: 'value'
   };
 
   export type CellValueScalarFieldEnum = (typeof CellValueScalarFieldEnum)[keyof typeof CellValueScalarFieldEnum]
@@ -13318,20 +13256,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-  /**
    * Reference to a field of type 'SortDirection'
    */
   export type EnumSortDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SortDirection'>
@@ -13342,6 +13266,20 @@ export namespace Prisma {
    * Reference to a field of type 'SortDirection[]'
    */
   export type ListEnumSortDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SortDirection[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
   /**
    * Deep Input Types
@@ -13710,8 +13648,6 @@ export namespace Prisma {
     recordId?: StringFilter<"CellValue"> | string
     fieldId?: StringFilter<"CellValue"> | string
     value?: JsonNullableFilter<"CellValue">
-    textValue?: StringNullableFilter<"CellValue"> | string | null
-    numberValue?: FloatNullableFilter<"CellValue"> | number | null
     record?: XOR<RecordScalarRelationFilter, RecordWhereInput>
     field?: XOR<FieldScalarRelationFilter, FieldWhereInput>
   }
@@ -13720,8 +13656,6 @@ export namespace Prisma {
     recordId?: SortOrder
     fieldId?: SortOrder
     value?: SortOrderInput | SortOrder
-    textValue?: SortOrderInput | SortOrder
-    numberValue?: SortOrderInput | SortOrder
     record?: RecordOrderByWithRelationInput
     field?: FieldOrderByWithRelationInput
   }
@@ -13734,8 +13668,6 @@ export namespace Prisma {
     recordId?: StringFilter<"CellValue"> | string
     fieldId?: StringFilter<"CellValue"> | string
     value?: JsonNullableFilter<"CellValue">
-    textValue?: StringNullableFilter<"CellValue"> | string | null
-    numberValue?: FloatNullableFilter<"CellValue"> | number | null
     record?: XOR<RecordScalarRelationFilter, RecordWhereInput>
     field?: XOR<FieldScalarRelationFilter, FieldWhereInput>
   }, "recordId_fieldId">
@@ -13744,13 +13676,9 @@ export namespace Prisma {
     recordId?: SortOrder
     fieldId?: SortOrder
     value?: SortOrderInput | SortOrder
-    textValue?: SortOrderInput | SortOrder
-    numberValue?: SortOrderInput | SortOrder
     _count?: CellValueCountOrderByAggregateInput
-    _avg?: CellValueAvgOrderByAggregateInput
     _max?: CellValueMaxOrderByAggregateInput
     _min?: CellValueMinOrderByAggregateInput
-    _sum?: CellValueSumOrderByAggregateInput
   }
 
   export type CellValueScalarWhereWithAggregatesInput = {
@@ -13760,8 +13688,6 @@ export namespace Prisma {
     recordId?: StringWithAggregatesFilter<"CellValue"> | string
     fieldId?: StringWithAggregatesFilter<"CellValue"> | string
     value?: JsonNullableWithAggregatesFilter<"CellValue">
-    textValue?: StringNullableWithAggregatesFilter<"CellValue"> | string | null
-    numberValue?: FloatNullableWithAggregatesFilter<"CellValue"> | number | null
   }
 
   export type ViewWhereInput = {
@@ -14290,8 +14216,6 @@ export namespace Prisma {
 
   export type CellValueCreateInput = {
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
     record: RecordCreateNestedOneWithoutCellsInput
     field: FieldCreateNestedOneWithoutCellsInput
   }
@@ -14300,14 +14224,10 @@ export namespace Prisma {
     recordId: string
     fieldId: string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
   }
 
   export type CellValueUpdateInput = {
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
     record?: RecordUpdateOneRequiredWithoutCellsNestedInput
     field?: FieldUpdateOneRequiredWithoutCellsNestedInput
   }
@@ -14316,30 +14236,22 @@ export namespace Prisma {
     recordId?: StringFieldUpdateOperationsInput | string
     fieldId?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type CellValueCreateManyInput = {
     recordId: string
     fieldId: string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
   }
 
   export type CellValueUpdateManyMutationInput = {
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type CellValueUncheckedUpdateManyInput = {
     recordId?: StringFieldUpdateOperationsInput | string
     fieldId?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type ViewCreateInput = {
@@ -14927,17 +14839,6 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
   export type RecordScalarRelationFilter = {
     is?: RecordWhereInput
     isNot?: RecordWhereInput
@@ -14957,30 +14858,16 @@ export namespace Prisma {
     recordId?: SortOrder
     fieldId?: SortOrder
     value?: SortOrder
-    textValue?: SortOrder
-    numberValue?: SortOrder
-  }
-
-  export type CellValueAvgOrderByAggregateInput = {
-    numberValue?: SortOrder
   }
 
   export type CellValueMaxOrderByAggregateInput = {
     recordId?: SortOrder
     fieldId?: SortOrder
-    textValue?: SortOrder
-    numberValue?: SortOrder
   }
 
   export type CellValueMinOrderByAggregateInput = {
     recordId?: SortOrder
     fieldId?: SortOrder
-    textValue?: SortOrder
-    numberValue?: SortOrder
-  }
-
-  export type CellValueSumOrderByAggregateInput = {
-    numberValue?: SortOrder
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -15007,22 +14894,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedJsonNullableFilter<$PrismaModel>
     _max?: NestedJsonNullableFilter<$PrismaModel>
-  }
-
-  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type ViewCountOrderByAggregateInput = {
@@ -15769,14 +15640,6 @@ export namespace Prisma {
     connect?: FieldWhereUniqueInput
   }
 
-  export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type RecordUpdateOneRequiredWithoutCellsNestedInput = {
     create?: XOR<RecordCreateWithoutCellsInput, RecordUncheckedCreateWithoutCellsInput>
     connectOrCreate?: RecordCreateOrConnectWithoutCellsInput
@@ -16127,22 +15990,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumSortDirectionFilter<$PrismaModel = never> = {
@@ -16776,16 +16623,12 @@ export namespace Prisma {
 
   export type CellValueCreateWithoutFieldInput = {
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
     record: RecordCreateNestedOneWithoutCellsInput
   }
 
   export type CellValueUncheckedCreateWithoutFieldInput = {
     recordId: string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
   }
 
   export type CellValueCreateOrConnectWithoutFieldInput = {
@@ -16902,8 +16745,6 @@ export namespace Prisma {
     recordId?: StringFilter<"CellValue"> | string
     fieldId?: StringFilter<"CellValue"> | string
     value?: JsonNullableFilter<"CellValue">
-    textValue?: StringNullableFilter<"CellValue"> | string | null
-    numberValue?: FloatNullableFilter<"CellValue"> | number | null
   }
 
   export type ViewFilterUpsertWithWhereUniqueWithoutFieldInput = {
@@ -16989,16 +16830,12 @@ export namespace Prisma {
 
   export type CellValueCreateWithoutRecordInput = {
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
     field: FieldCreateNestedOneWithoutCellsInput
   }
 
   export type CellValueUncheckedCreateWithoutRecordInput = {
     fieldId: string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
   }
 
   export type CellValueCreateOrConnectWithoutRecordInput = {
@@ -17809,8 +17646,6 @@ export namespace Prisma {
   export type CellValueCreateManyFieldInput = {
     recordId: string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
   }
 
   export type ViewFilterCreateManyFieldInput = {
@@ -17829,23 +17664,17 @@ export namespace Prisma {
 
   export type CellValueUpdateWithoutFieldInput = {
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
     record?: RecordUpdateOneRequiredWithoutCellsNestedInput
   }
 
   export type CellValueUncheckedUpdateWithoutFieldInput = {
     recordId?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type CellValueUncheckedUpdateManyWithoutFieldInput = {
     recordId?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type ViewFilterUpdateWithoutFieldInput = {
@@ -17893,29 +17722,21 @@ export namespace Prisma {
   export type CellValueCreateManyRecordInput = {
     fieldId: string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: string | null
-    numberValue?: number | null
   }
 
   export type CellValueUpdateWithoutRecordInput = {
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
     field?: FieldUpdateOneRequiredWithoutCellsNestedInput
   }
 
   export type CellValueUncheckedUpdateWithoutRecordInput = {
     fieldId?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type CellValueUncheckedUpdateManyWithoutRecordInput = {
     fieldId?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
-    textValue?: NullableStringFieldUpdateOperationsInput | string | null
-    numberValue?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type ViewFilterCreateManyViewInput = {

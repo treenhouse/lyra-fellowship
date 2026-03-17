@@ -105,15 +105,12 @@ model CellValue {
   fieldId  String
   value    Json?
 
-  textValue   String?
-  numberValue Float?
-
   record Record @relation(fields: [recordId], references: [id], onDelete: Cascade)
   field  Field  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 
   @@id([recordId, fieldId])
-  @@index([fieldId, textValue])    // for text filters + sorts
-  @@index([fieldId, numberValue])  // for numeric filters + sorts
+  @@index([fieldId])
+  @@index([recordId])
 }
 
 model View {

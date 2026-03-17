@@ -168,9 +168,7 @@ exports.Prisma.RecordScalarFieldEnum = {
 exports.Prisma.CellValueScalarFieldEnum = {
   recordId: 'recordId',
   fieldId: 'fieldId',
-  value: 'value',
-  textValue: 'textValue',
-  numberValue: 'numberValue'
+  value: 'value'
 };
 
 exports.Prisma.ViewScalarFieldEnum = {

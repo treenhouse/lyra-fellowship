@@ -2,7 +2,7 @@
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
-import { FieldType, Prisma } from "../../../../generated/prisma";
+import { Prisma } from "../../../../generated/prisma";
 
 function toJsonValue(
   value: string | number | null
