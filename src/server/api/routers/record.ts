@@ -48,17 +48,21 @@ export const recordRouter = createTRPCRouter({
 
       // Build WHERE — filter by matching cell values
       // Each filter requires a matching cell for that field
-      const where: Prisma.RecordWhereInput = {
-        tableId,
-        AND: filters.map((f) => ({
+      const where: Prisma.RecordWhereInput = { tableId };
+
+      if (filters.length > 0) {
+        // Cast each filter clause to Prisma.RecordWhereInput so the AND
+        // array is the correct type. We also cast the equals value to
+        // Prisma.InputJsonValue to satisfy the Prisma typings.
+        where.AND = filters.map((f) => ({
           cells: {
             some: {
               fieldId: f.fieldId,
-              value:   { equals: f.value },
+              value: { equals: f.value as Prisma.InputJsonValue },
             },
           },
-        })),
-      };
+        })) as Prisma.RecordWhereInput[];
+      }
 
       // Fetch records — we do app-level sorting since cell values are in a
       // related table (pure SQL ordering on JSON across a join is painful)
@@ -91,6 +95,7 @@ export const recordRouter = createTRPCRouter({
             if (isNum) {
               cmp = aNum - bNum;
             } else {
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               cmp = String(aVal).localeCompare(String(bVal));
             }
 
