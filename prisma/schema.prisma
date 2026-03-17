@@ -133,7 +133,7 @@ model ViewFilter {
   value   Json?
 
   view  View   @relation(fields: [viewId], references: [id], onDelete: Cascade)
-  field Field? @relation(fields: [fieldId], references: [id])
+  field Field? @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 }
 
 model ViewSort {
@@ -144,7 +144,7 @@ model ViewSort {
   order     Int?
 
   view  View  @relation(fields: [viewId], references: [id], onDelete: Cascade)
-  field Field @relation(fields: [fieldId], references: [id])
+  field Field @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 }
 
 enum SortDirection {
