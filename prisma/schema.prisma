@@ -105,12 +105,15 @@ model CellValue {
   fieldId  String
   value    Json?
 
+  textValue   String?
+  numberValue Float?
+
   record Record @relation(fields: [recordId], references: [id], onDelete: Cascade)
   field  Field  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 
   @@id([recordId, fieldId])
-  @@index([fieldId])
-  @@index([recordId])
+  @@index([fieldId, textValue])    // for text filters + sorts
+  @@index([fieldId, numberValue])  // for numeric filters + sorts
 }
 
 model View {
@@ -129,6 +132,7 @@ model ViewFilter {
   id      String  @id @default(uuid())
   viewId  String
   fieldId String?
+  operator String  @default("equals")
   value   Json?
 
   view  View   @relation(fields: [viewId], references: [id], onDelete: Cascade)

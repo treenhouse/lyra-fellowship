@@ -168,7 +168,9 @@ exports.Prisma.RecordScalarFieldEnum = {
 exports.Prisma.CellValueScalarFieldEnum = {
   recordId: 'recordId',
   fieldId: 'fieldId',
-  value: 'value'
+  value: 'value',
+  textValue: 'textValue',
+  numberValue: 'numberValue'
 };
 
 exports.Prisma.ViewScalarFieldEnum = {
@@ -182,6 +184,7 @@ exports.Prisma.ViewFilterScalarFieldEnum = {
   id: 'id',
   viewId: 'viewId',
   fieldId: 'fieldId',
+  operator: 'operator',
   value: 'value'
 };
 
