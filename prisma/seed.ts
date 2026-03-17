@@ -29,7 +29,7 @@ async function main() {
   // ─── Clean previous seed data ────────────────────────────────────────────────
   await prisma.base.deleteMany({
     where: {
-      ownerId: { in: [delia.id, marco.id, priya.id] },
+      // ownerId: { in: [delia.id, marco.id, priya.id] },
       name: { in: ["Project Tracker", "Marketing Hub", "Bug Tracker", "Hiring Pipeline"] },
     },
   });
@@ -39,7 +39,10 @@ async function main() {
   // Tests: owner-only ops, shared member access
   // ═══════════════════════════════════════════════════════════════════════════
   const projectBase = await prisma.base.create({
-    data: { name: "Project Tracker", ownerId: delia.id },
+    data: { 
+      name: "Project Tracker", 
+      // ownerId: delia.id  
+     },
   });
   await prisma.baseMember.createMany({
     data: [
@@ -128,7 +131,10 @@ async function main() {
   // Tests: a second owner, cross-user membership
   // ═══════════════════════════════════════════════════════════════════════════
   const marketingBase = await prisma.base.create({
-    data: { name: "Marketing Hub", ownerId: marco.id },
+    data: { 
+      name: "Marketing Hub", 
+      // ownerId: marco.id 
+    },
   });
   await prisma.baseMember.createMany({
     data: [
@@ -173,7 +179,10 @@ async function main() {
   // Tests: private base — Delia & Marco should NOT see this
   // ═══════════════════════════════════════════════════════════════════════════
   const bugBase = await prisma.base.create({
-    data: { name: "Bug Tracker", ownerId: priya.id },
+    data: { 
+      name: "Bug Tracker", 
+      // ownerId: priya.id 
+    },
   });
   await prisma.baseMember.create({ data: { baseId: bugBase.id, userId: priya.id } });
 
@@ -210,7 +219,10 @@ async function main() {
   // Tests: all three users share a base
   // ═══════════════════════════════════════════════════════════════════════════
   const hiringBase = await prisma.base.create({
-    data: { name: "Hiring Pipeline", ownerId: delia.id },
+    data: { 
+      name: "Hiring Pipeline", 
+      // ownerId: delia.id 
+    },
   });
   await prisma.baseMember.createMany({
     data: [
