@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { type FieldType } from "../../../../generated/prisma";
-import Sidebar from "./sidebar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TableWithMeta    = RouterOutputs["table"]["getById"];
@@ -43,7 +42,7 @@ type FilterOperator = typeof FILTER_OPERATORS[number]["value"];
 
 const COL_WIDTH     = 180;
 const ROW_HEIGHT    = 32;
-const ROW_NUM_WIDTH = 83;
+const ROW_NUM_WIDTH = 52;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getCellDisplay(record: RecordRow, fieldId: string): string {
@@ -359,7 +358,7 @@ function EditableCell({ recordId, fieldId, fieldType, value, isSelected, isEditi
 
   return (
     <div
-      className={`relative flex items-center w-full h-full overflow-hidden ${isSelected ? "ring-2 ring-inset ring-blue-500 z-10" : ""}`}
+      className={`relative flex items-center w-full h-full overflow-hidden ${isSelected ? "ring-2 ring-inset ring-blue-500 z-10" : "hover:bg-[#f0f7ff]"}`}
       onClick={onSelect}
       onDoubleClick={onEdit}
     >
@@ -480,7 +479,7 @@ function Grid({ table, records, viewId, onSavingChange }: {
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex items-center px-3 gap-2 w-full h-full">
+        <div className="flex items-center px-3 gap-2 w-full h-full group-hover/row:bg-[#f0f7ff]">
           <input type="checkbox" className="w-3.5 h-3.5 rounded accent-blue-600 opacity-0 group-hover/row:opacity-100 flex-shrink-0" />
           <span className="text-[12px] text-gray-400 group-hover/row:hidden flex-1 text-right">{row.index + 1}</span>
           <button
@@ -517,7 +516,23 @@ function Grid({ table, records, viewId, onSavingChange }: {
       },
     }));
 
-    return [rowNumCol, ...dataCols];
+    // "Add field" column
+    const addFieldCol: ColumnDef<RecordRow> = {
+      id: "__addfield__",
+      size: 120,
+      header: () => (
+        <div onClick={() => setAddingField(true)}
+          className="flex items-center justify-center gap-1 w-full h-full cursor-pointer hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors px-2">
+          <Plus size={13} />
+          <span className="text-[12px]">Add or import</span>
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="w-full h-full bg-white group-hover/row:bg-[#f0f7ff]" />
+      ),
+    };
+
+    return [rowNumCol, ...dataCols, addFieldCol];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, table.id, selected, editing]);
 
@@ -549,80 +564,64 @@ function Grid({ table, records, viewId, onSavingChange }: {
   }
 
   return (
-    <div ref={gridRef} className="flex-1 overflow-auto outline-none focus:outline-none bg-[#f6f8fc]" tabIndex={0} onKeyDown={handleGridKeyDown}>
+    <div ref={gridRef} className="flex-1 overflow-auto outline-none focus:outline-none" tabIndex={0} onKeyDown={handleGridKeyDown}>
       {addingField && <AddFieldModal tableId={table.id} onClose={() => setAddingField(false)} />}
 
-      <div className="flex">
-        <div
-          className="inline-block overflow-hidden"
-          style={{ width: tanTable.getTotalSize() }}
-        >
-          {/* ── TanStack Header ── */}
-          <div className="flex sticky top-0 z-20">
-            {tanTable.getHeaderGroups().map((headerGroup) =>
-              headerGroup.headers.map((header) => (
-                <div
-                  key={header.id}
-                  className="relative flex-shrink-0 border-r border-b border-[#dde1e3] bg-white"
-                  style={{ width: header.getSize(), height: ROW_HEIGHT }}
-                >
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                  {header.column.getCanResize() && (
-                    <div
-                      onMouseDown={header.getResizeHandler()}
-                      onTouchStart={header.getResizeHandler()}
-                      className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-blue-400 opacity-0 hover:opacity-100"
-                    />
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* ── TanStack Rows ── */}
-          {tanTable.getRowModel().rows.map((row) => (
-            <div key={row.id} className="flex group/row hover:bg-gray-50">
-              {row.getVisibleCells().map((cell) => (
-                <div
-                  key={cell.id}
-                  className="flex-shrink-0 border-r border-b border-[#dde1e3] overflow-hidden bg-white group-hover/row:bg-gray-50"
-                  style={{ width: cell.column.getSize(), height: ROW_HEIGHT }}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </div>
-              ))}
-            </div>
-          ))}
-
-          {/* ── Add Record Row ── */}
-          <div className="flex bg-white border-b border-r border-[#dde1e3]">
-            {/* Row number column */}
-            <div
-              onClick={() => addRecord.mutate({ tableId: table.id })}
-              className="flex items-center justify-center cursor-pointer hover:bg-gray-50 text-gray-400 hover:text-gray-600"
-              style={{ height: ROW_HEIGHT, width: ROW_NUM_WIDTH }}
-            >
-              {addRecord.isPending ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
-            </div>
-
-            {/* Match each column width */}
-            {fields.map((field) => (
+      <div className="inline-block min-w-full">
+        {/* ── TanStack Header ── */}
+        <div className="flex sticky top-0 z-20">
+          {tanTable.getHeaderGroups().map((headerGroup) =>
+            headerGroup.headers.map((header) => (
               <div
-                key={field.id}
-                onClick={() => addRecord.mutate({ tableId: table.id })}
-                className="flex items-center px-2 text-gray-400 text-[12px] hover:bg-gray-50"
-                style={{ height: ROW_HEIGHT, width: COL_WIDTH }}
-              />
+                key={header.id}
+                className="relative flex-shrink-0 border-r border-b border-gray-200 bg-[#f8f9fa]"
+                style={{ width: header.getSize(), height: ROW_HEIGHT }}
+              >
+                {flexRender(header.column.columnDef.header, header.getContext())}
+                {/* Column resize handle */}
+                {header.column.getCanResize() && (
+                  <div
+                    onMouseDown={header.getResizeHandler()}
+                    onTouchStart={header.getResizeHandler()}
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-blue-400 opacity-0 hover:opacity-100"
+                  />
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* ── TanStack Rows ── */}
+        {tanTable.getRowModel().rows.map((row) => (
+          <div key={row.id} className="flex group/row">
+            {row.getVisibleCells().map((cell) => (
+              <div
+                key={cell.id}
+                className="flex-shrink-0 border-r border-b border-gray-200 bg-white overflow-hidden"
+                style={{ width: cell.column.getSize(), height: ROW_HEIGHT }}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </div>
             ))}
           </div>
-        </div>
-        {/* ADD FIELD BUTTON */}
-        <div
-          onClick={() => setAddingField(true)}
-          className="flex items-center justify-center w-[40px] cursor-pointer bg-white border-b border-r border-[#dde1e3] text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-          style={{ height: ROW_HEIGHT }}
-        >
-          <Plus size={14} />
+        ))}
+
+        {/* ── Add Record Row ── */}
+        <div className="flex border-b border-gray-200">
+          <div
+            onClick={() => addRecord.mutate({ tableId: table.id })}
+            className="flex items-center gap-1.5 px-3 cursor-pointer hover:bg-gray-50 text-gray-400 hover:text-gray-600 transition-colors"
+            style={{ height: ROW_HEIGHT, width: ROW_NUM_WIDTH }}
+          >
+            {addRecord.isPending ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+          </div>
+          <div
+            onClick={() => addRecord.mutate({ tableId: table.id })}
+            className="flex items-center gap-1 px-2 cursor-pointer hover:bg-gray-50 text-gray-400 hover:text-gray-600 transition-colors border-l border-gray-200"
+            style={{ height: ROW_HEIGHT }}
+          >
+            <span className="text-[12px]">Add...</span>
+          </div>
         </div>
       </div>
     </div>
@@ -707,240 +706,205 @@ export default function BasePage() {
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden font-sans">
-      {/* ── Global left sidebar ── */}
-        <Sidebar />
 
-      <div className="pl-[56px] h-full flex flex-col overflow-hidden">
-        {/* ── Top nav ── */}
-        <header className="flex-shrink-0 flex items-center h-[56px] border-b border-gray-200 px-4 bg-white">
-          {/* Logo + base name — far left */}
-          <div className="flex items-center gap-2 min-w-0">
-            <button onClick={() => router.push("/")}
-              className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <span className="text-white font-black text-[13px]">A</span>
-            </button>
-            <div className="flex items-center gap-1 min-w-0">
-              <span className="font-semibold text-gray-900 text-[15px] truncate">{base.name}</span>
-              <ChevronDown size={14} className="text-gray-500 flex-shrink-0" />
-            </div>
-          </div>
-
-          {/* Center nav tabs — absolutely centered */}
-          <nav className="absolute left-1/2 -translate-x-1/2 flex items-end gap-0 h-[56px]">
-            {[
-              { label: "Data",        active: true  },
-              { label: "Automations", active: false },
-              { label: "Interfaces",  active: false },
-              { label: "Forms",       active: false },
-            ].map(({ label, active }) => (
-              <button key={label}
-                className={`px-4 h-full text-[13px] font-medium border-b-2 transition-colors ${
-                  active
-                    ? "text-blue-600 border-blue-600"
-                    : "text-gray-600 border-transparent hover:text-gray-900"
-                }`}>
-                {label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="flex-1" />
-
-          {/* Right actions */}
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-[13px] text-gray-700 hover:bg-gray-50 font-medium">
-              <MonitorPlay size={14} /> Launch
-            </button>
-            <button className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-500">
-              <Link size={14} />
-            </button>
-            <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-blue-600 text-white text-[13px] font-semibold hover:bg-blue-700">
-              Share
-            </button>
-          </div>
-        </header>
-
-        {/* ── Table tabs row ── */}
-        <div className="flex-shrink-0 flex items-stretch h-[32px] border-b border-gray-200 bg-white overflow-x-auto">
-          {(base.tables ?? []).map((t) => (
-            <button key={t.id}
-              onClick={() => { setActiveTableId(t.id); setActiveViewId(null); }}
-              className={`flex items-center gap-1.5 px-4 text-[13px] font-medium border-b-2 whitespace-nowrap flex-shrink-0 transition-colors ${
-                activeTableId === t.id
-                  ? "text-blue-700 border-blue-600 bg-white"
-                  : "text-gray-700 border-transparent hover:text-gray-900 hover:bg-gray-50"
-              }`}>
-              {t.name}
-              {activeTableId === t.id && <ChevronDown size={12} className="text-blue-500 ml-0.5" />}
-            </button>
-          ))}
-          <button onClick={() => setAddingTable(true)}
-            className="flex items-center gap-1.5 px-3 text-[13px] text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent flex-shrink-0">
-            <Plus size={13} /> Add or import
+      {/* ── Top nav ── */}
+      <header className="flex-shrink-0 flex items-center h-[56px] border-b border-gray-200 px-4 gap-3 bg-white">
+        <div className="flex items-center gap-2 min-w-0">
+          <button onClick={() => router.push("/")}
+            className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 via-yellow-400 to-blue-500 flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-black text-[13px]">A</span>
           </button>
-          <div className="flex-1" />
-          <button className="flex items-center gap-1.5 px-4 text-[12px] text-gray-500 hover:bg-gray-50 border-b-2 border-transparent flex-shrink-0">
-            <Wrench size={13} /> Tools <ChevronDown size={11} className="ml-0.5" />
-          </button>
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="font-semibold text-gray-900 text-[15px] truncate">{base.name}</span>
+            <ChevronDown size={14} className="text-gray-400 flex-shrink-0" />
+          </div>
         </div>
 
-        {/* ── Toolbar ── */}
-        <div className="flex-shrink-0 flex items-center h-[48px] border-b border-gray-200 bg-white px-2 gap-0">
-          {/* LEFT: Sidebar toggle + Grid view */}
-          <button className="p-2 rounded hover:bg-gray-100 text-gray-500 mr-0.5">
-            <AlignJustify size={15} />
-          </button>
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded hover:bg-gray-100 text-[12px] text-gray-700 font-medium">
-            <Grid3X3 size={13} className="text-blue-600" />
-            Grid view
-            <ChevronDown size={11} className="text-gray-400 ml-0.5" />
-          </button>
-
-          <div className="flex-1" />
-
-          {/* RIGHT: all toolbar actions */}
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100 whitespace-nowrap">
-            <EyeOff size={13} /> Hide fields
-          </button>
-
-          {/* Filter */}
-          <div className="relative">
-            <button
-              onClick={() => { setFilterOpen((v) => !v); setSortOpen(false); }}
-              data-panel="filter"
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap hover:bg-gray-100 ${
-                filterOpen || activeFilterCount > 0 ? "text-blue-600" : "text-gray-600"
-              }`}>
-              <Filter size={13} /> Filter
-              {activeFilterCount > 0 && (
-                <span className="ml-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold px-1">
-                  {activeFilterCount}
-                </span>
-              )}
+        <nav className="flex items-end gap-0 ml-4 h-full">
+          {[
+            { label: "Data",        active: true  },
+            { label: "Automations", active: false },
+            { label: "Interfaces",  active: false },
+            { label: "Forms",       active: false },
+          ].map(({ label, active }) => (
+            <button key={label}
+              className={`px-3 h-full text-[13px] font-medium border-b-2 transition-colors ${active ? "text-blue-600 border-blue-600" : "text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300"}`}>
+              {label}
             </button>
-            {filterOpen && activeViewId && table && (
-              <FilterPanel viewId={activeViewId} fields={table.fields} onClose={() => setFilterOpen(false)} />
+          ))}
+        </nav>
+
+        <div className="flex-1" />
+
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-[13px] text-gray-700 hover:bg-gray-50 font-medium">
+            <MonitorPlay size={14} /> Launch
+          </button>
+          <button className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-500">
+            <Link size={14} />
+          </button>
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[13px] font-semibold hover:bg-blue-700">
+            Share
+          </button>
+        </div>
+      </header>
+
+      {/* ── Table tabs ── */}
+      <div className="flex-shrink-0 flex items-stretch h-[42px] border-b border-gray-200 bg-white px-2 overflow-x-auto">
+        {(base.tables ?? []).map((t) => (
+          <button key={t.id}
+            onClick={() => { setActiveTableId(t.id); setActiveViewId(null); }}
+            className={`flex items-center gap-1.5 px-3 text-[13px] font-medium border-b-2 whitespace-nowrap flex-shrink-0 transition-colors ${
+              activeTableId === t.id
+                ? "text-blue-600 border-blue-600 bg-blue-50"
+                : "text-gray-600 border-transparent hover:text-gray-900 hover:bg-gray-50"
+            }`}>
+            {t.name}
+            {activeTableId === t.id && <ChevronDown size={12} className="text-blue-400" />}
+          </button>
+        ))}
+        <button onClick={() => setAddingTable(true)}
+          className="flex items-center gap-1 px-3 text-[13px] text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent flex-shrink-0">
+          <Plus size={13} /> Add or import
+        </button>
+        <div className="flex-1" />
+        <button className="flex items-center gap-1.5 px-3 text-[12px] text-gray-500 hover:bg-gray-50 border-b-2 border-transparent flex-shrink-0">
+          <Wrench size={13} /> Tools <ChevronDown size={11} />
+        </button>
+      </div>
+
+      {/* ── Toolbar ── */}
+      <div className="flex-shrink-0 flex items-center h-[42px] border-b border-gray-200 bg-white px-3 gap-0.5">
+        <button className="p-2 rounded hover:bg-gray-100 text-gray-500 mr-1"><AlignJustify size={15} /></button>
+        <button className="flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-gray-100 text-[12px] text-gray-700 font-medium border border-transparent hover:border-gray-200">
+          <Grid3X3 size={13} className="text-blue-600" /> Grid view <ChevronDown size={11} className="text-gray-400" />
+        </button>
+        <div className="w-px h-5 bg-gray-200 mx-2" />
+
+        {[
+          { icon: EyeOff,       label: "Hide fields" },
+          { icon: Users,        label: "Group"       },
+          { icon: Palette,      label: "Color"       },
+          { icon: AlignJustify, label: "Row height"  },
+        ].map(({ icon: Icon, label }) => (
+          <button key={label} className="flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100 whitespace-nowrap">
+            <Icon size={13} /> {label}
+          </button>
+        ))}
+
+        {/* Filter */}
+        <div className="relative">
+          <button
+            onClick={() => { setFilterOpen((v) => !v); setSortOpen(false); }}
+            data-panel="filter"
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] hover:bg-gray-100 whitespace-nowrap ${filterOpen ? "bg-blue-50 text-blue-600" : "text-gray-600"}`}>
+            <Filter size={13} /> Filter
+            {activeFilterCount > 0 && (
+              <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold">{activeFilterCount}</span>
             )}
-          </div>
-
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100 whitespace-nowrap">
-            <Users size={13} /> Group
           </button>
-
-          {/* Sort */}
-          <div className="relative">
-            <button
-              onClick={() => { setSortOpen((v) => !v); setFilterOpen(false); }}
-              data-panel="sort"
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap hover:bg-gray-100 ${
-                sortOpen || activeSortCount > 0 ? "text-blue-600" : "text-gray-600"
-              }`}>
-              <ArrowUpDown size={13} /> Sort
-              {activeSortCount > 0 && (
-                <span className="ml-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold px-1">
-                  {activeSortCount}
-                </span>
-              )}
-            </button>
-            {sortOpen && activeViewId && table && (
-              <SortPanel viewId={activeViewId} fields={table.fields} onClose={() => setSortOpen(false)} />
-            )}
-          </div>
-
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100 whitespace-nowrap">
-            <Palette size={13} /> Color
-          </button>
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100 whitespace-nowrap">
-            <AlignJustify size={13} /> Row height
-          </button>
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100 whitespace-nowrap">
-            <Share2 size={13} /> Share and sync
-          </button>
-
-          <div className="w-px h-5 bg-gray-200 mx-1" />
-
-          {/* Search */}
-          {showSearch ? (
-            <div className="flex items-center gap-1 bg-white border border-blue-500 rounded-lg px-2 py-1">
-              <Search size={12} className="text-blue-500 flex-shrink-0" />
-              <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)}
-                placeholder="Find in view" className="text-[12px] w-36 outline-none" />
-              <button onClick={() => { setSearch(""); setShowSearch(false); }} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
-                <X size={12} />
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => setShowSearch(true)} className="p-2 rounded hover:bg-gray-100 text-gray-500">
-              <Search size={15} />
-            </button>
+          {filterOpen && activeViewId && table && (
+            <FilterPanel viewId={activeViewId} fields={table.fields} onClose={() => setFilterOpen(false)} />
           )}
         </div>
 
-        {/* ── Content ── */}
-        <div className="flex flex-1 overflow-hidden">
-
-          {/* Views sidebar */}
-            <div className="flex-shrink-0 w-[268px] border-r border-gray-200 bg-white flex flex-col overflow-hidden">
-              <button className="flex items-center gap-2 px-4 py-3 text-[13px] text-gray-700 hover:bg-gray-50 border-b border-gray-100 font-medium">
-                <Plus size={14} className="text-gray-500" /> Create new...
-              </button>
-              <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
-                <Search size={13} className="text-gray-400 flex-shrink-0" />
-                <input placeholder="Find a view" className="flex-1 text-[12px] text-gray-600 outline-none bg-transparent placeholder-gray-400" />
-                <button className="p-1 rounded hover:bg-gray-100 text-gray-400 flex-shrink-0"><Settings size={13} /></button>
-              </div>
-              <div className="flex-1 overflow-y-auto py-1">
-                {table?.views?.map((v: ViewRow) => (
-                  <button key={v.id} onClick={() => setActiveViewId(v.id)}
-                    className={`w-full flex items-center gap-2 px-4 py-2 text-[13px] transition-colors ${
-                      activeViewId === v.id ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700 hover:bg-gray-50"
-                    }`}>
-                    <Grid3X3 size={13} className={activeViewId === v.id ? "text-blue-600" : "text-blue-500"} />
-                    {v.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-          {/* ── Grid + status ── */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f0f0] relative">
-            {tableLoading || recordsLoading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
-                  <Loader2 size={20} className="animate-spin text-blue-600" />
-                  <p className="text-[12px] text-gray-400">Loading…</p>
-                </div>
-              </div>
-            ) : table ? (
-              <>
-                <Grid table={table} records={filteredRecords} viewId={activeViewId} onSavingChange={setIsSaving} />
-
-                {/* Status bar */}
-                <div className="flex-shrink-0 flex items-center justify-between h-[32px] border-t border-gray-200 px-4 bg-white z-10">
-                  <span className="text-[12px] text-gray-500">
-                    {filteredRecords.length} record{filteredRecords.length !== 1 ? "s" : ""}
-                    {search ? ` matching "${search}"` : ""}
-                    {isSaving && (
-                      <span className="ml-2 text-gray-400 inline-flex items-center gap-1">
-                        <Loader2 size={10} className="animate-spin" /> Saving…
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-[12px] text-gray-500">Sum 0.0</span>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-[13px] text-gray-400">Select a table to get started.</p>
-              </div>
+        {/* Sort */}
+        <div className="relative">
+          <button
+            onClick={() => { setSortOpen((v) => !v); setFilterOpen(false); }}
+            data-panel="sort"
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] hover:bg-gray-100 whitespace-nowrap ${sortOpen ? "bg-blue-50 text-blue-600" : "text-gray-600"}`}>
+            <ArrowUpDown size={13} /> Sort
+            {activeSortCount > 0 && (
+              <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold">{activeSortCount}</span>
             )}
+          </button>
+          {sortOpen && activeViewId && table && (
+            <SortPanel viewId={activeViewId} fields={table.fields} onClose={() => setSortOpen(false)} />
+          )}
+        </div>
+
+        <button className="flex items-center gap-1.5 px-2 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100">
+          <Share2 size={13} /> Share and sync
+        </button>
+
+        <div className="flex-1" />
+
+        {showSearch ? (
+          <div className="flex items-center gap-1 bg-white border border-blue-500 rounded-lg px-2 py-1 mr-1">
+            <Search size={12} className="text-blue-500" />
+            <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Find in view" className="text-[12px] w-36 outline-none" />
+            <button onClick={() => { setSearch(""); setShowSearch(false); }} className="text-gray-400 hover:text-gray-600"><X size={12} /></button>
+          </div>
+        ) : (
+          <button onClick={() => setShowSearch(true)} className="p-2 rounded hover:bg-gray-100 text-gray-500">
+            <Search size={15} />
+          </button>
+        )}
+      </div>
+
+      {/* ── Content ── */}
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* Views sidebar */}
+        <div className="flex-shrink-0 w-[268px] border-r border-gray-200 bg-white flex flex-col overflow-hidden">
+          <button className="flex items-center gap-2 px-4 py-3 text-[13px] text-gray-700 hover:bg-gray-50 border-b border-gray-100 font-medium">
+            <Plus size={14} className="text-gray-500" /> Create new...
+          </button>
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
+            <Search size={13} className="text-gray-400 flex-shrink-0" />
+            <input placeholder="Find a view" className="flex-1 text-[12px] text-gray-600 outline-none bg-transparent placeholder-gray-400" />
+            <button className="p-1 rounded hover:bg-gray-100 text-gray-400 flex-shrink-0"><Settings size={13} /></button>
+          </div>
+          <div className="flex-1 overflow-y-auto py-1">
+            {table?.views?.map((v: ViewRow) => (
+              <button key={v.id} onClick={() => setActiveViewId(v.id)}
+                className={`w-full flex items-center gap-2 px-4 py-2 text-[13px] transition-colors ${
+                  activeViewId === v.id ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700 hover:bg-gray-50"
+                }`}>
+                <Grid3X3 size={13} className={activeViewId === v.id ? "text-blue-600" : "text-blue-500"} />
+                {v.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        {addingTable && (
-          <AddTableModal baseId={baseId} onClose={() => setAddingTable(false)} onCreated={(id) => setActiveTableId(id)} />
-        )}
+        {/* Grid + status */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-white">
+          {tableLoading || recordsLoading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 size={20} className="animate-spin text-blue-600" />
+                <p className="text-[12px] text-gray-400">Loading…</p>
+              </div>
+            </div>
+          ) : table ? (
+            <>
+              <Grid table={table} records={filteredRecords} viewId={activeViewId} onSavingChange={setIsSaving} />
+              <div className="flex-shrink-0 flex items-center h-[32px] border-t border-gray-200 px-4 bg-white gap-3">
+                <span className="text-[12px] text-gray-500">
+                  {filteredRecords.length} record{filteredRecords.length !== 1 ? "s" : ""}
+                  {search ? ` matching "${search}"` : ""}
+                </span>
+                {isSaving && (
+                  <span className="text-[12px] text-gray-400 flex items-center gap-1">
+                    <Loader2 size={11} className="animate-spin" /> Saving…
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-[13px] text-gray-400">Select a table to get started.</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {addingTable && (
+        <AddTableModal baseId={baseId} onClose={() => setAddingTable(false)} onCreated={(id) => setActiveTableId(id)} />
+      )}
     </div>
   );
 }
