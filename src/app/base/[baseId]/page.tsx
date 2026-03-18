@@ -48,11 +48,9 @@ const ROW_NUM_WIDTH = 83;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getCellDisplay(record: RecordRow, fieldId: string): string {
   const cell = record.cells.find((c: CellValueRow) => c.fieldId === fieldId);
-  const v = cell?.value;
-  if (v === null || v === undefined) return "";
-  if (typeof v === "string")  return v;
-  if (typeof v === "number")  return String(v);
-  if (typeof v === "boolean") return String(v);
+  if (!cell) return "";
+  if (cell.valueText !== null) return String(cell.valueText);
+  if (cell.valueNumber !== null) return String(cell.valueNumber);
   return "";
 }
 
@@ -402,30 +400,36 @@ function Grid({ table, records, viewId, onSavingChange }: {
     [table.fields]
   );
 
-  const updateCell = api.cell.update.useMutation({
-    onMutate: async ({ recordId, fieldId, value }) => {
-      onSavingChange(true);
-      await utils.record.list.cancel(queryKey);
-      const previous = utils.record.list.getData(queryKey);
-      utils.record.list.setData(queryKey, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          records: old.records.map((record) => {
-            if (record.id !== recordId) return record;
-            const existingCell = record.cells.find((c) => c.fieldId === fieldId);
-            const updatedCells = existingCell
-              ? record.cells.map((c) => c.fieldId === fieldId ? { ...c, value } : c)
-              : [...record.cells, { recordId, fieldId, value }];
-            return { ...record, cells: updatedCells };
-          }),
-        };
-      });
-      return { previous };
-    },
-    onError: (_err, _input, context) => { utils.record.list.setData(queryKey, context?.previous); },
-    onSettled: () => { onSavingChange(false); void utils.record.list.invalidate({ tableId: table.id }); },
-  });
+    const updateCell = api.cell.update.useMutation({
+      onMutate: async ({ recordId, fieldId, value }) => {
+        onSavingChange(true);
+        await utils.record.list.cancel(queryKey);
+        const previous = utils.record.list.getData(queryKey);
+        const fieldType = fields.find((f) => f.id === fieldId)?.type;
+        
+        const mapped = fieldType === "number"
+          ? { valueText: null, valueNumber: typeof value === "number" ? value : (value ? Number(value) : null) }
+          : { valueText: value ? String(value) : null, valueNumber: null };
+
+        utils.record.list.setData(queryKey, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            records: old.records.map((record) => {
+              if (record.id !== recordId) return record;
+              const existingCell = record.cells.find((c) => c.fieldId === fieldId);
+              const updatedCells = existingCell
+                ? record.cells.map((c) => c.fieldId === fieldId ? { ...c, valueText: mapped.valueText, valueNumber: mapped.valueNumber } : c)
+                : [...record.cells, { recordId, fieldId, valueText: mapped.valueText, valueNumber: mapped.valueNumber }];
+              return { ...record, cells: updatedCells };
+            }),
+          };
+        });
+        return { previous };
+      },
+      onError: (_err, _input, context) => { utils.record.list.setData(queryKey, context?.previous); },
+      onSettled: () => { onSavingChange(false); void utils.record.list.invalidate({ tableId: table.id }); },
+    });
 
   const addRecord = api.record.create.useMutation({
     onMutate: async () => {

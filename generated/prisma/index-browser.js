@@ -162,13 +162,16 @@ exports.Prisma.RecordScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   position: 'position',
-  userId: 'userId'
+  userId: 'userId',
+  sortValueText: 'sortValueText',
+  sortValueNumber: 'sortValueNumber'
 };
 
 exports.Prisma.CellValueScalarFieldEnum = {
   recordId: 'recordId',
   fieldId: 'fieldId',
-  value: 'value'
+  valueText: 'valueText',
+  valueNumber: 'valueNumber'
 };
 
 exports.Prisma.ViewScalarFieldEnum = {

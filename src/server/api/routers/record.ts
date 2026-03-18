@@ -1,13 +1,48 @@
+/* eslint-disable @typescript-eslint/no-base-to-string */
 // src/server/api/routers/record.ts
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
-import { Prisma } from "../../../../generated/prisma";
+import { Prisma, type ViewFilter, type Field, type FieldType } from "../../../../generated/prisma";
 
-function toJsonValue(
-  value: string | number | null
-): Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue {
-  if (value === null) return Prisma.DbNull;
-  return value;
+function mapValue(fieldType: FieldType, raw: string | number | null) {
+  if (raw == null) return { valueJson: null, valueText: null, valueNumber: null };
+
+  if (fieldType === "number") {
+    const num = Number(raw);
+    return { valueJson: num, valueText: null, valueNumber: isNaN(num) ? null : num };
+  } else {
+    const str = String(raw);
+    return { valueJson: str, valueText: str, valueNumber: null };
+  }
+}
+
+function buildFilterCondition(f: ViewFilter, field: Field): Prisma.RecordWhereInput {
+  const value = f.value;
+
+  switch (f.operator) {
+    case "equals":
+      return field.type === "number"
+        ? { cells: { some: { fieldId: f.fieldId!, valueNumber: Number(value) } } }
+        : { cells: { some: { fieldId: f.fieldId!, valueText: String(value) } } };
+
+    case "contains":
+      return { cells: { some: { fieldId: f.fieldId!, valueText: { contains: String(value), mode: "insensitive" } } } };
+
+    case "gt":
+      return { cells: { some: { fieldId: f.fieldId!, valueNumber: { gt: Number(value) } } } };
+
+    case "lt":
+      return { cells: { some: { fieldId: f.fieldId!, valueNumber: { lt: Number(value) } } } };
+
+    case "is_empty":
+      return { cells: { none: { fieldId: f.fieldId! } } };
+
+    case "is_not_empty":
+      return { cells: { some: { fieldId: f.fieldId! } } };
+
+    default:
+      return {};
+  }
 }
 
 export const recordRouter = createTRPCRouter({
@@ -15,14 +50,18 @@ export const recordRouter = createTRPCRouter({
     .input(z.object({
       tableId: z.string().uuid(),
       viewId:  z.string().uuid().optional(),
+      search:  z.string().optional(),
       cursor:  z.string().uuid().optional(),
       limit:   z.number().int().min(1).max(1000).default(100),
     }))
     .query(async ({ ctx, input }) => {
       const { tableId, viewId, cursor, limit } = input;
-
+      const fields = await ctx.db.field.findMany({
+        where: { tableId },
+        select: { id: true, name: true, type: true, tableId: true, position: true },
+      });
       // Load view config if provided
-      let filters: { fieldId: string; value: unknown }[] = [];
+      let filters: ViewFilter[] = [];
       let sorts:   { fieldId: string; direction: "asc" | "desc"; order: number }[] = [];
 
       if (viewId) {
@@ -34,9 +73,9 @@ export const recordRouter = createTRPCRouter({
           },
         });
         if (view) {
-          filters = view.filters
-            .filter((f) => f.fieldId && f.value !== null && f.value !== undefined)
-            .map((f) => ({ fieldId: f.fieldId!, value: f.value }));
+          filters = view.filters.filter(
+            (f) => f.fieldId && f.value !== null && f.value !== undefined
+          );
 
           sorts = view.sorts.map((s) => ({
             fieldId:   s.fieldId,
@@ -46,75 +85,50 @@ export const recordRouter = createTRPCRouter({
         }
       }
 
-      // Build WHERE — filter by matching cell values
-      // Each filter requires a matching cell for that field
       const where: Prisma.RecordWhereInput = { tableId };
 
       if (filters.length > 0) {
-        // Cast each filter clause to Prisma.RecordWhereInput so the AND
-        // array is the correct type. We also cast the equals value to
-        // Prisma.InputJsonValue to satisfy the Prisma typings.
-        where.AND = filters.map((f) => ({
-          cells: {
-            some: {
-              fieldId: f.fieldId,
-              value: { equals: f.value as Prisma.InputJsonValue },
-            },
-          },
-        })) as Prisma.RecordWhereInput[];
+        where.AND = filters.map((f) => {
+          const field = fields.find((fld) => fld.id === f.fieldId);
+          if (!field) return {}; 
+          return buildFilterCondition(f, field);
+        });
       }
 
-      // Fetch records — we do app-level sorting since cell values are in a
-      // related table (pure SQL ordering on JSON across a join is painful)
+      const dbOrderBy: Prisma.RecordOrderByWithRelationInput[] =
+        sorts.length > 0
+          ? sorts
+              .map((s) => {
+                const field = fields.find((f) => f.id === s.fieldId);
+                if (!field) return null;
+
+                return field.type === "number"
+                  ? { sortValueNumber: s.direction }
+                  : { sortValueText: s.direction };
+              })
+              .filter(Boolean) as Prisma.RecordOrderByWithRelationInput[]
+          : [
+              { position: "asc" },
+              { createdAt: "asc" },
+            ];
+
       const records = await ctx.db.record.findMany({
         where,
         include: { cells: true },
-        // Default DB order — we'll re-sort in JS if view sorts exist
-        orderBy: [{ position: "asc" }, { createdAt: "asc" }],
-        take:   sorts.length > 0 ? undefined : limit + 1, // skip pagination when sorting
+        orderBy: dbOrderBy,
+        take:   limit + 1, 
         cursor: cursor && sorts.length === 0 ? { id: cursor } : undefined,
-        skip:   cursor && sorts.length === 0 ? 1 : 0,
+        skip:   cursor ? 1 : 0,
       });
-
-      // App-level sort by cell values
-      let sorted = records;
-      if (sorts.length > 0) {
-        sorted = [...records].sort((a, b) => {
-          for (const sort of sorts) {
-            const aCell = a.cells.find((c) => c.fieldId === sort.fieldId);
-            const bCell = b.cells.find((c) => c.fieldId === sort.fieldId);
-            const aVal  = aCell?.value ?? "";
-            const bVal  = bCell?.value ?? "";
-
-            // Numeric comparison if both are numbers
-            const aNum = Number(aVal);
-            const bNum = Number(bVal);
-            const isNum = !isNaN(aNum) && !isNaN(bNum);
-
-            let cmp = 0;
-            if (isNum) {
-              cmp = aNum - bNum;
-            } else {
-              // eslint-disable-next-line @typescript-eslint/no-base-to-string
-              cmp = String(aVal).localeCompare(String(bVal));
-            }
-
-            if (cmp !== 0) return sort.direction === "asc" ? cmp : -cmp;
-          }
-          return 0;
-        });
-
-        // Apply pagination after sort
-        const start = cursor ? sorted.findIndex((r) => r.id === cursor) + 1 : 0;
-        sorted = sorted.slice(start, start + limit + 1);
-      }
-
+      
       let nextCursor: string | undefined;
-      if (sorted.length > limit) {
-        nextCursor = sorted.pop()!.id;
+      let resultRecords = records;
+      if (records.length > limit) {
+        nextCursor = records.pop()!.id;
+        resultRecords = records;
       }
 
-      return { records: sorted, nextCursor };
+      return { records: resultRecords, nextCursor };
     }),
 
   create: publicProcedure
@@ -136,6 +150,12 @@ export const recordRouter = createTRPCRouter({
         where: { tableId: input.tableId },
         _max: { position: true },
       });
+      let fieldMap: Map<string, FieldType> | undefined;
+      if (input.cells) {  
+        const fieldIds = [...new Set(input.cells.map(c => c.fieldId))];
+        const fields = await ctx.db.field.findMany({ where: { id: { in: fieldIds } } });
+        fieldMap = new Map(fields.map(f => [f.id, f.type]));
+      }
 
       return ctx.db.record.create({
         data: {
@@ -143,10 +163,15 @@ export const recordRouter = createTRPCRouter({
           position: (maxPos._max.position ?? -1) + 1,
           cells: input.cells
             ? {
-                create: input.cells.map((c) => ({
-                  fieldId: c.fieldId,
-                  value: toJsonValue(c.value), 
-                })),
+                create: input.cells.map((c) => {
+                  const fieldType = fieldMap!.get(c.fieldId)!;
+                  const mapped = mapValue(fieldType, c.value);
+                  return {
+                    fieldId: c.fieldId,
+                    valueText: mapped.valueText,
+                    valueNumber: mapped.valueNumber,
+                  };
+                }),
               }
             : undefined,
         },

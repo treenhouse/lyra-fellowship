@@ -79,10 +79,10 @@ async function main() {
     });
     await prisma.cellValue.createMany({
       data: [
-        { recordId: record.id, fieldId: taskName.id,     value: row.name },
-        { recordId: record.id, fieldId: taskPriority.id, value: row.priority },
-        { recordId: record.id, fieldId: taskStatus.id,   value: row.status },
-        { recordId: record.id, fieldId: taskAssignee.id, value: row.assignee },
+        { recordId: record.id, fieldId: taskName.id,     valueText: row.name, valueNumber: null },
+        { recordId: record.id, fieldId: taskPriority.id, valueText: null, valueNumber: row.priority },
+        { recordId: record.id, fieldId: taskStatus.id,   valueText: row.status, valueNumber: null },
+        { recordId: record.id, fieldId: taskAssignee.id, valueText: row.assignee, valueNumber: null },
       ],
     });
   }
@@ -105,9 +105,9 @@ async function main() {
     const r = await prisma.record.create({ data: { tableId: sprintsTable.id, position: i } });
     await prisma.cellValue.createMany({
       data: [
-        { recordId: r.id, fieldId: sprintName.id,    value: row.sprint },
-        { recordId: r.id, fieldId: sprintGoal.id,    value: row.goal },
-        { recordId: r.id, fieldId: sprintVelocity.id, value: row.velocity },
+        { recordId: r.id, fieldId: sprintName.id,    valueText: row.sprint, valueNumber: null },
+        { recordId: r.id, fieldId: sprintGoal.id,    valueText: row.goal, valueNumber: null },
+        { recordId: r.id, fieldId: sprintVelocity.id, valueText: null, valueNumber: row.velocity },
       ],
     });
   }
@@ -164,10 +164,10 @@ async function main() {
     const r = await prisma.record.create({ data: { tableId: campaignsTable.id, userId: marco.id, position: i } });
     await prisma.cellValue.createMany({
       data: [
-        { recordId: r.id, fieldId: campName.id,    value: row.campaign },
-        { recordId: r.id, fieldId: campChannel.id, value: row.channel  },
-        { recordId: r.id, fieldId: campBudget.id,  value: row.budget   },
-        { recordId: r.id, fieldId: campStatus.id,  value: row.status   },
+        { recordId: r.id, fieldId: campName.id,    valueText: row.campaign, valueNumber: null },
+        { recordId: r.id, fieldId: campChannel.id, valueText: row.channel, valueNumber: null },
+        { recordId: r.id, fieldId: campBudget.id,  valueText: null, valueNumber: row.budget },
+        { recordId: r.id, fieldId: campStatus.id,  valueText: row.status, valueNumber: null },
       ],
     });
   }
@@ -205,9 +205,9 @@ async function main() {
     const r = await prisma.record.create({ data: { tableId: bugsTable.id, userId: priya.id, position: i } });
     await prisma.cellValue.createMany({
       data: [
-        { recordId: r.id, fieldId: bugTitle.id,    value: row.title    },
-        { recordId: r.id, fieldId: bugSeverity.id, value: row.severity },
-        { recordId: r.id, fieldId: bugReporter.id, value: row.reporter },
+        { recordId: r.id, fieldId: bugTitle.id,    valueText: row.title, valueNumber: null },
+        { recordId: r.id, fieldId: bugSeverity.id, valueText: null, valueNumber: row.severity },
+        { recordId: r.id, fieldId: bugReporter.id, valueText: row.reporter, valueNumber: null },
       ],
     });
   }
@@ -254,10 +254,10 @@ async function main() {
     const r = await prisma.record.create({ data: { tableId: candidatesTable.id, userId: delia.id, position: i } });
     await prisma.cellValue.createMany({
       data: [
-        { recordId: r.id, fieldId: candName.id,  value: row.name  },
-        { recordId: r.id, fieldId: candRole.id,  value: row.role  },
-        { recordId: r.id, fieldId: candStage.id, value: row.stage },
-        { recordId: r.id, fieldId: candScore.id, value: row.score },
+        { recordId: r.id, fieldId: candName.id,  valueText: row.name, valueNumber: null },
+        { recordId: r.id, fieldId: candRole.id,  valueText: row.role, valueNumber: null },
+        { recordId: r.id, fieldId: candStage.id, valueText: row.stage, valueNumber: null },
+        { recordId: r.id, fieldId: candScore.id, valueText: null, valueNumber: row.score },
       ],
     });
   }
