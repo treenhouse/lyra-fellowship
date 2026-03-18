@@ -5,34 +5,68 @@ import { z } from "zod";
 import { Prisma, type ViewFilter, type Field, type FieldType } from "../../../../generated/prisma";
 
 function mapValue(fieldType: FieldType, raw: string | number | null) {
-  if (raw == null) return { valueJson: null, valueText: null, valueNumber: null };
+  if (raw == null) return { valueText: null, valueNumber: null };
 
   if (fieldType === "number") {
     const num = Number(raw);
-    return { valueJson: num, valueText: null, valueNumber: isNaN(num) ? null : num };
+    return { valueText: null, valueNumber: isNaN(num) ? null : num };
   } else {
     const str = String(raw);
-    return { valueJson: str, valueText: str, valueNumber: null };
+    return { valueText: str, valueNumber: null };
   }
 }
 
 function buildFilterCondition(f: ViewFilter, field: Field): Prisma.RecordWhereInput {
-  const value = f.value;
+  const raw = f.value;
+
+  const stringValue =
+    raw === null || raw === undefined ? "" : String(raw);
+
+  const numberValue =
+  raw === null || raw === undefined || raw === ""
+    ? null
+    : Number(raw);
 
   switch (f.operator) {
     case "equals":
       return field.type === "number"
-        ? { cells: { some: { fieldId: f.fieldId!, valueNumber: Number(value) } } }
-        : { cells: { some: { fieldId: f.fieldId!, valueText: String(value) } } };
+        ? { cells: { some: { fieldId: f.fieldId!, valueNumber: numberValue } } }
+        : { cells: { some: { fieldId: f.fieldId!, valueText: stringValue } } };
+
+    case "not_equals":
+      return field.type === "number"
+        ? { cells: { none: { fieldId: f.fieldId!, valueNumber: numberValue } } }
+        : { cells: { none: { fieldId: f.fieldId!, valueText: stringValue } } };
 
     case "contains":
-      return { cells: { some: { fieldId: f.fieldId!, valueText: { contains: String(value), mode: "insensitive" } } } };
+      return { cells: { some: { fieldId: f.fieldId!, valueText: { contains: stringValue, mode: "insensitive" } } } };
+
+    case "not_contains":
+      return { cells: { none: { fieldId: f.fieldId!, valueText: { contains: stringValue, mode: "insensitive" } } } };
 
     case "gt":
-      return { cells: { some: { fieldId: f.fieldId!, valueNumber: { gt: Number(value) } } } };
+      if (numberValue === null) return {};
+
+      return {
+        cells: {
+          some: {
+            fieldId: f.fieldId!,
+            valueNumber: { gt: numberValue },
+          },
+        },
+      };
 
     case "lt":
-      return { cells: { some: { fieldId: f.fieldId!, valueNumber: { lt: Number(value) } } } };
+      if (numberValue === null) return {};
+
+      return {
+        cells: {
+          some: {
+            fieldId: f.fieldId!,
+            valueNumber: { lt: numberValue },
+          },
+        },
+      };
 
     case "is_empty":
       return { cells: { none: { fieldId: f.fieldId! } } };
@@ -73,9 +107,15 @@ export const recordRouter = createTRPCRouter({
           },
         });
         if (view) {
-          filters = view.filters.filter(
-            (f) => f.fieldId && f.value !== null && f.value !== undefined
-          );
+          filters = view.filters.filter((f) => {
+            if (!f.fieldId) return false;
+
+            const noValueNeeded = ["is_empty", "is_not_empty"].includes(f.operator ?? "");
+
+            if (noValueNeeded) return true;
+
+            return f.value !== null && f.value !== undefined;
+          });
 
           sorts = view.sorts.map((s) => ({
             fieldId:   s.fieldId,
@@ -88,11 +128,13 @@ export const recordRouter = createTRPCRouter({
       const where: Prisma.RecordWhereInput = { tableId };
 
       if (filters.length > 0) {
-        where.AND = filters.map((f) => {
-          const field = fields.find((fld) => fld.id === f.fieldId);
-          if (!field) return {}; 
-          return buildFilterCondition(f, field);
-        });
+        where.AND = filters
+          .map((f) => {
+            const field = fields.find((fld) => fld.id === f.fieldId);
+            if (!field) return null;
+            return buildFilterCondition(f, field);
+          })
+          .filter((c): c is Prisma.RecordWhereInput => !!c && Object.keys(c).length > 0);
       }
 
       const dbOrderBy: Prisma.RecordOrderByWithRelationInput[] =
@@ -151,16 +193,42 @@ export const recordRouter = createTRPCRouter({
         _max: { position: true },
       });
       let fieldMap: Map<string, FieldType> | undefined;
+      let sortedFieldIds = new Set<string>();
+
       if (input.cells) {  
         const fieldIds = [...new Set(input.cells.map(c => c.fieldId))];
         const fields = await ctx.db.field.findMany({ where: { id: { in: fieldIds } } });
         fieldMap = new Map(fields.map(f => [f.id, f.type]));
+
+        // Check which fields are used in sorting
+        const sortedFields = await ctx.db.viewSort.findMany({
+          where: { fieldId: { in: fieldIds } },
+          select: { fieldId: true },
+        });
+        sortedFieldIds = new Set(sortedFields.map(s => s.fieldId));
+      }
+
+      // Determine sort values from the input cells
+      let sortValueText: string | null = null;
+      let sortValueNumber: number | null = null;
+
+      if (input.cells && sortedFieldIds.size > 0) {
+        // Use the first sorted field's value
+        const firstSortedCell = input.cells.find(c => sortedFieldIds.has(c.fieldId));
+        if (firstSortedCell) {
+          const fieldType = fieldMap!.get(firstSortedCell.fieldId)!;
+          const mapped = mapValue(fieldType, firstSortedCell.value);
+          sortValueText = mapped.valueText;
+          sortValueNumber = mapped.valueNumber;
+        }
       }
 
       return ctx.db.record.create({
         data: {
           tableId: input.tableId,
           position: (maxPos._max.position ?? -1) + 1,
+          sortValueText,
+          sortValueNumber,
           cells: input.cells
             ? {
                 create: input.cells.map((c) => {

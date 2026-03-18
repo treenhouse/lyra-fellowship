@@ -36,6 +36,8 @@ const FILTER_OPERATORS = [
   { value: "not_equals",   label: "is not"           },
   { value: "contains",     label: "contains"         },
   { value: "not_contains", label: "does not contain" },
+  { value: "gt",           label: "greater than"     }, 
+  { value: "lt",           label: "less than"        }, 
   { value: "is_empty",     label: "is empty"         },
   { value: "is_not_empty", label: "is not empty"     },
 ] as const;
@@ -55,12 +57,42 @@ function getCellDisplay(record: RecordRow, fieldId: string): string {
 }
 
 // ─── Filter Panel ─────────────────────────────────────────────────────────────
-function FilterPanel({ viewId, fields, onClose }: { viewId: string; fields: FieldRow[]; onClose: () => void }) {
+function FilterPanel({ viewId, tableId, fields, onClose }: { viewId: string; tableId: string; fields: FieldRow[]; onClose: () => void }) {
   const utils = api.useUtils();
   const { data: viewConfig } = api.view.getWithConfig.useQuery({ id: viewId });
 
   const upsertFilter = api.view.upsertFilter.useMutation({
-    onSuccess: () => { void utils.view.getWithConfig.invalidate({ id: viewId }); void utils.record.list.invalidate(); },
+    onMutate: async (input) => {
+      await utils.view.getWithConfig.cancel({ id: viewId });
+      const previous = utils.view.getWithConfig.getData({ id: viewId });
+      utils.view.getWithConfig.setData({ id: viewId }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          filters: old.filters.map((f) =>
+            f.id === input.id
+              ? {
+                  ...f,
+                  operator: input.operator,
+                  fieldId: input.fieldId,
+                  value: input.value === undefined ? f.value : input.value,
+                }
+              : f
+          ),
+        };
+      });
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      // Rollback on error
+      utils.view.getWithConfig.setData({ id: viewId }, context?.previous);
+    },
+    onSuccess: () => {
+      console.log("Filter updated");
+      // Invalidate to ensure server state is synced
+      void utils.view.getWithConfig.invalidate({ id: viewId });
+      void utils.record.list.invalidate({ tableId, viewId });
+    },
   });
   const deleteFilter = api.view.deleteFilter.useMutation({
     onSuccess: () => { void utils.view.getWithConfig.invalidate({ id: viewId }); void utils.record.list.invalidate(); },
@@ -71,12 +103,30 @@ function FilterPanel({ viewId, fields, onClose }: { viewId: string; fields: Fiel
     upsertFilter.mutate({ viewId, fieldId: fields[0].id, operator: "equals", value: "" });
   }
 
-  function updateFilter(filter: ActiveFilter, patch: { fieldId?: string; operator?: FilterOperator; value?: string | number | null }) {
+  function updateFilter(
+    filter: ActiveFilter,
+    patch: { fieldId?: string; operator?: FilterOperator; value?: string | number | null }
+  ) {
+    const nextOperator = patch.operator ?? (filter.operator as FilterOperator);
+
+    const hasValueChange = "value" in patch;
+    const nextValue = hasValueChange ? patch.value : filter.value;
+
+    const mutationValue: string | number | null =
+      nextOperator === "is_empty" || nextOperator === "is_not_empty"
+        ? null
+        : nextValue == null
+        ? ""
+        : typeof nextValue === "boolean"
+        ? String(nextValue)
+        : (nextValue as string | number);
+
     upsertFilter.mutate({
-      id: filter.id, viewId,
-      fieldId:  patch.fieldId  ?? filter.fieldId  ?? fields[0]!.id,
-      operator: patch.operator ?? (filter.operator as FilterOperator) ?? "equals",
-      value:    "value" in patch ? patch.value : (filter.value as string | number | null),
+      id: filter.id,
+      viewId,
+      fieldId: patch.fieldId ?? filter.fieldId ?? fields[0]!.id,
+      operator: nextOperator,
+      value: mutationValue,
     });
   }
 
@@ -111,7 +161,7 @@ function FilterPanel({ viewId, fields, onClose }: { viewId: string; fields: Fiel
                 className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 {fields.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
-              <select value={filter.operator ?? "equals"} onChange={(e) => updateFilter(filter, { operator: e.target.value as FilterOperator })}
+              <select value={filter.operator ?? "equals"} onChange={(e) => updateFilter(filter, { operator: e.target.value as FilterOperator, }) }
                 className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 {FILTER_OPERATORS.map((op) => <option key={op.value} value={op.value}>{op.label}</option>)}
               </select>
@@ -144,9 +194,53 @@ function SortPanel({ viewId, fields, onClose }: { viewId: string; fields: FieldR
   const utils = api.useUtils();
   const { data: viewConfig } = api.view.getWithConfig.useQuery({ id: viewId });
   const upsertSort = api.view.upsertSort.useMutation({
+    onMutate: async (input) => {
+      await utils.view.getWithConfig.cancel({ id: viewId });
+      const previous = utils.view.getWithConfig.getData({ id: viewId });
+      utils.view.getWithConfig.setData({ id: viewId }, (old) => {
+        if (!old) return old;
+        if (input.id) {
+          // Update existing sort
+          return {
+            ...old,
+            sorts: old.sorts.map((s) =>
+              s.id === input.id
+                ? { ...s, fieldId: input.fieldId, direction: input.direction, order: input.order ?? s.order }
+                : s
+            ),
+          };
+        } else {
+          // Add new sort - but we can't create the full object without the field data
+          // So we just return the old sorts unchanged and let the server response update the cache
+          return old;
+        }
+      });
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      // Rollback on error
+      utils.view.getWithConfig.setData({ id: viewId }, context?.previous);
+    },
     onSuccess: () => { void utils.view.getWithConfig.invalidate({ id: viewId }); void utils.record.list.invalidate(); },
   });
+
   const deleteSort = api.view.deleteSort.useMutation({
+    onMutate: async ({ id }) => {
+      await utils.view.getWithConfig.cancel({ id: viewId });
+      const previous = utils.view.getWithConfig.getData({ id: viewId });
+      utils.view.getWithConfig.setData({ id: viewId }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          sorts: old.sorts.filter((s) => s.id !== id),
+        };
+      });
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      // Rollback on error
+      utils.view.getWithConfig.setData({ id: viewId }, context?.previous);
+    },
     onSuccess: () => { void utils.view.getWithConfig.invalidate({ id: viewId }); void utils.record.list.invalidate(); },
   });
 
@@ -170,7 +264,9 @@ function SortPanel({ viewId, fields, onClose }: { viewId: string; fields: FieldR
       </div>
       {sorts.length === 0 && <p className="text-[12px] text-gray-400 mb-3">Sort records in this view by one or more fields.</p>}
       <div className="space-y-2 mb-3">
-        {sorts.map((sort, i) => (
+        {sorts.map((sort, i) => {
+          const field = fields.find((f) => f.id === sort.fieldId);
+          return (
           <div key={sort.id} className="flex items-center gap-2">
             <span className="text-[11px] text-gray-400 w-8 text-right flex-shrink-0">{i === 0 ? "Sort by" : "Then by"}</span>
             <select value={sort.fieldId}
@@ -179,16 +275,17 @@ function SortPanel({ viewId, fields, onClose }: { viewId: string; fields: FieldR
               {fields.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
             <select value={sort.direction}
-              onChange={(e) => upsertSort.mutate({ id: sort.id, viewId, fieldId: sort.fieldId, direction: e.target.value as "asc" | "desc", order: sort.order ?? i })}
-              className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              <option value="asc">A → Z</option>
-              <option value="desc">Z → A</option>
-            </select>
+                onChange={(e) => upsertSort.mutate({ id: sort.id, viewId, fieldId: sort.fieldId, direction: e.target.value as "asc" | "desc", order: sort.order ?? i })}
+                className="px-2 py-1.5 rounded-lg border border-gray-200 text-[12px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="asc">{field?.type === "number" ? "1 → 9" : "A → Z"}</option>
+                <option value="desc">{field?.type === "number" ? "9 → 1" : "Z → A"}</option>
+              </select>
             <button onClick={() => deleteSort.mutate({ id: sort.id })} className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 flex-shrink-0">
               <X size={13} />
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
       <button onClick={addSort} disabled={upsertSort.isPending || sorts.length >= fields.length}
         className="flex items-center gap-1.5 text-[12px] text-blue-600 hover:text-blue-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed">
@@ -438,7 +535,7 @@ function Grid({ table, records, viewId, onSavingChange }: {
       const tempId = `temp-${Date.now()}`;
       utils.record.list.setData(queryKey, (old) => {
         if (!old) return old;
-        return { ...old, records: [...old.records, { id: tempId, tableId: table.id, position: old.records.length, createdAt: new Date(), updatedAt: new Date(), userId: null, cells: [] }] };
+        return { ...old, records: [...old.records, { id: tempId, tableId: table.id, position: old.records.length, createdAt: new Date(), updatedAt: new Date(), userId: null, cells: [], sortValueText: null, sortValueNumber: null }] };
       });
       return { previous };
     },
@@ -823,7 +920,7 @@ export default function BasePage() {
               )}
             </button>
             {filterOpen && activeViewId && table && (
-              <FilterPanel viewId={activeViewId} fields={table.fields} onClose={() => setFilterOpen(false)} />
+              <FilterPanel viewId={activeViewId} tableId={table.id} fields={table.fields} onClose={() => setFilterOpen(false)} />
             )}
           </div>
 
