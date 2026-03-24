@@ -17,11 +17,8 @@ import {
   Edit2,
 } from "lucide-react";
 import { api, type RouterOutputs } from "~/trpc/react";
-import { type FieldType } from "../../../../generated/prisma";
+import { type FieldType } from "../../../generated/prisma";
 import Sidebar from "./sidebar";
-import { getServerSession } from "next-auth";
-import { authOptions } from "~/server/auth";
-import { redirect } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TableWithMeta    = RouterOutputs["table"]["getById"];

@@ -1,247 +1,26 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
-  Search, Plus, Star, MoreHorizontal, Home, Share2,
+  Search, Plus, Star, Home, Share2,
   Briefcase, ChevronRight, ChevronDown, LayoutTemplate,
-  ShoppingBag, Upload, X, Loader2, Edit2, Trash2, Check,
-  Grid2X2, List, Clock, Zap, FileUp, Hammer,
+  ShoppingBag, Upload, X, Loader2,
+  Grid2X2, List, Clock,
 } from "lucide-react";
-import { api, type RouterOutputs } from "~/trpc/react";
+import { api } from "~/trpc/react";
+import { CreateBaseModal } from "./components/home/CreateBaseModal";
+import { BaseListItem } from "./components/home/BaseListItem";
+import { BaseGridCard } from "./components/home/BaseGridCard";
 
-type BaseWithCount = RouterOutputs["base"]["list"][number];
-
-// ─── Avatar helpers ───────────────────────────────────────────────────────────
-const AVATAR_COLORS = [
-  "#4a4a4a", "#1f6feb", "#c9372c", "#206e4e",
-  "#ae2e24", "#0055cc", "#7a1fa2", "#164b35",
-];
-function avatarColor(id: string) {
-  return AVATAR_COLORS[id.charCodeAt(0) % AVATAR_COLORS.length]!;
-}
-function initials(name: string) {
-  return name.slice(0, 2);
-}
-
-function CreateBaseModal({ onClose }: { onClose: () => void }) {
-  const [name, setName] = useState("Untitled Base");
-  const utils = api.useUtils();
-  const create = api.base.create.useMutation({
-    onSuccess: () => { void utils.base.list.invalidate(); onClose(); },
-  });
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative z-10 w-[480px] rounded-xl bg-white shadow-2xl p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-[17px] font-semibold text-gray-900">Create a base</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400"><X size={18} /></button>
-        </div>
-        <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Base name</label>
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onFocus={(e) => e.target.select()}
-          onKeyDown={(e) => e.key === "Enter" && name.trim() && create.mutate({ name: name.trim() })}
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <div className="flex gap-2 justify-end mt-5">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-[13px] font-medium text-gray-700 hover:bg-gray-100 border border-gray-200">Cancel</button>
-          <button
-            disabled={!name.trim() || create.isPending}
-            onClick={() => create.mutate({ name: name.trim() })}
-            className="px-4 py-2 rounded-lg text-[13px] font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-          >
-            {create.isPending && <Loader2 size={13} className="animate-spin" />}
-            Create base
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Rename Modal ─────────────────────────────────────────────────────────────
-function RenameModal({ base, onClose }: { base: BaseWithCount; onClose: () => void }) {
-  const [name, setName] = useState(base.name);
-  const utils = api.useUtils();
-  const update = api.base.update.useMutation({
-    onSuccess: () => { void utils.base.list.invalidate(); onClose(); },
-  });
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative z-10 w-80 rounded-xl bg-white shadow-2xl p-5">
-        <h2 className="text-[15px] font-semibold text-gray-900 mb-4">Rename base</h2>
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onFocus={(e) => e.target.select()}
-          onKeyDown={(e) => e.key === "Enter" && name.trim() && update.mutate({ id: base.id, name: name.trim() })}
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <div className="flex gap-2 justify-end mt-4">
-          <button onClick={onClose} className="px-3 py-1.5 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 border border-gray-200">Cancel</button>
-          <button
-            disabled={!name.trim() || update.isPending}
-            onClick={() => update.mutate({ id: base.id, name: name.trim() })}
-            className="px-3 py-1.5 rounded-lg text-[13px] font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-          >
-            {update.isPending && <Loader2 size={12} className="animate-spin" />}
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Base Context Menu ────────────────────────────────────────────────────────
-function BaseMenu({ base, onRename, onClose }: { base: BaseWithCount; onRename: () => void; onClose: () => void }) {
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const utils = api.useUtils();
-  const del = api.base.delete.useMutation({
-    onSuccess: () => { void utils.base.list.invalidate(); onClose(); },
-  });
-  return (
-    <div className="absolute right-0 top-8 z-30 w-52 rounded-lg bg-white shadow-xl border border-gray-200 py-1.5 text-[13px]">
-      <button onClick={() => { onRename(); onClose(); }} className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 text-gray-700">
-        <Edit2 size={14} className="text-gray-400" /> Rename
-      </button>
-      <button className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 text-gray-700">
-        <Share2 size={14} className="text-gray-400" /> Duplicate
-      </button>
-      <button className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 text-gray-700">
-        <ChevronRight size={14} className="text-gray-400" /> Move
-      </button>
-      <button className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 text-gray-700">
-        <Briefcase size={14} className="text-gray-400" /> Go to workspace
-      </button>
-      <button className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 text-gray-700">
-        <Grid2X2 size={14} className="text-gray-400" /> Customize appearance
-      </button>
-      <hr className="my-1 border-gray-100" />
-      {!confirmDelete ? (
-        <button onClick={() => setConfirmDelete(true)} className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-red-50 text-red-500">
-          <Trash2 size={14} /> Delete
-        </button>
-      ) : (
-        <div className="px-3 py-2">
-          <p className="text-gray-500 text-[12px] mb-2">Delete &quot;{base.name}&quot;? This can&apos;t be undone.</p>
-          <div className="flex gap-2">
-            <button onClick={onClose} className="flex-1 px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 text-[12px]">Cancel</button>
-            <button
-              onClick={() => del.mutate({ id: base.id })}
-              disabled={del.isPending}
-              className="flex-1 px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600 text-[12px] flex items-center justify-center gap-1"
-            >
-              {del.isPending ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />} Delete
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Base List Item ───────────────────────────────────────────────────────────
-function BaseListItem({ base }: { base: BaseWithCount }) {
-  const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [renaming, setRenaming] = useState(false);
-  const color = avatarColor(base.id);
-  return (
-    <>
-      <div
-        className="group relative flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-        onClick={() => !menuOpen && router.push(`/base/${base.id}`)}
-      >
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold text-[14px]"
-          style={{ backgroundColor: color }}
-        >
-          {initials(base.name)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-medium text-gray-900 truncate">{base.name}</p>
-          <p className="text-[12px] text-blue-600 mt-0.5">Open data</p>
-        </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={(e) => e.stopPropagation()} className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-yellow-500 transition-colors" title="Star">
-            <Star size={15} />
-          </button>
-          <div className="relative">
-            <button
-              onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
-              className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <MoreHorizontal size={15} />
-            </button>
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }} />
-                <BaseMenu base={base} onRename={() => setRenaming(true)} onClose={() => setMenuOpen(false)} />
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-      {renaming && <RenameModal base={base} onClose={() => setRenaming(false)} />}
-    </>
-  );
-}
-
-// ─── Base Grid Card ───────────────────────────────────────────────────────────
-function BaseGridCard({ base }: { base: BaseWithCount }) {
-  const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [renaming, setRenaming] = useState(false);
-  const color = avatarColor(base.id);
-  return (
-    <>
-      <div
-        className="group relative flex flex-col gap-2 p-4 rounded-xl border border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all"
-        onClick={() => !menuOpen && router.push(`/base/${base.id}`)}
-      >
-        <div className="flex items-start justify-between">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-[14px]" style={{ backgroundColor: color }}>
-            {initials(base.name)}
-          </div>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-            <button onClick={(e) => e.stopPropagation()} className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-yellow-500"><Star size={13} /></button>
-            <div className="relative">
-              <button onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }} className="p-1 rounded hover:bg-gray-100 text-gray-400"><MoreHorizontal size={13} /></button>
-              {menuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }} />
-                  <BaseMenu base={base} onRename={() => setRenaming(true)} onClose={() => setMenuOpen(false)} />
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        <p className="text-[13px] font-semibold text-gray-900 truncate">{base.name}</p>
-        <p className="text-[11px] text-gray-400">{base._count.tables} table{base._count.tables !== 1 ? "s" : ""}</p>
-      </div>
-      {renaming && <RenameModal base={base} onClose={() => setRenaming(false)} />}
-    </>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [creating,  setCreating]  = useState(false);
-  const [search,    setSearch]    = useState("");
-  const [viewMode,  setViewMode]  = useState<"list" | "grid">("list");
+  const [creating, setCreating] = useState(false);
+  const [search,   setSearch]   = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const { data: session } = useSession();
-  // to do: make sign in/out button
 
   const { data, isLoading } = api.base.list.useQuery();
-  const bases    = (data ?? []);
+  const bases    = data ?? [];
   const filtered = bases.filter((b) => b.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -315,14 +94,26 @@ export default function HomePage() {
               placeholder="Search..."
               className="w-full pl-9 pr-16 py-2 rounded-full border border-gray-300 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
             />
-            {search
-              ? <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={13} /></button>
-              : <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded pointer-events-none">ctrl K</span>
-            }
+            {search ? (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X size={13} />
+              </button>
+            ) : (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded pointer-events-none">
+                ctrl K
+              </span>
+            )}
           </div>
-          <div className="ml-auto">
-            <button onClick={() => signOut()} className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-[13px] font-semibold">
-              Sign out ({session?.user?.email})
+          <div className="ml-auto flex items-center gap-3">
+            <span className="text-[13px] text-gray-600">{session?.user?.email}</span>
+            <button
+              onClick={() => signOut()}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-[13px] text-gray-700 hover:bg-gray-100"
+            >
+              Sign out
             </button>
           </div>
         </header>
@@ -338,10 +129,16 @@ export default function HomePage() {
               <ChevronDown size={13} className="text-gray-500" />
             </button>
             <div className="flex items-center gap-1">
-              <button onClick={() => setViewMode("list")} className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-gray-200 text-gray-700" : "text-gray-400 hover:bg-gray-100"}`}>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-gray-200 text-gray-700" : "text-gray-400 hover:bg-gray-100"}`}
+              >
                 <List size={16} />
               </button>
-              <button onClick={() => setViewMode("grid")} className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-gray-200 text-gray-700" : "text-gray-400 hover:bg-gray-100"}`}>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-gray-200 text-gray-700" : "text-gray-400 hover:bg-gray-100"}`}
+              >
                 <Grid2X2 size={16} />
               </button>
             </div>
@@ -366,9 +163,20 @@ export default function HomePage() {
                 <Search size={22} className="text-gray-300" />
               </div>
               {search ? (
-                <><p className="text-[15px] font-semibold text-gray-700">No bases match &quot;{search}&quot;</p><p className="text-[13px] text-gray-400 mt-1">Try a different search</p></>
+                <>
+                  <p className="text-[15px] font-semibold text-gray-700">No bases match &quot;{search}&quot;</p>
+                  <p className="text-[13px] text-gray-400 mt-1">Try a different search</p>
+                </>
               ) : (
-                <><p className="text-[15px] font-semibold text-gray-700">No bases yet</p><button onClick={() => setCreating(true)} className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700"><Plus size={14} /> Create a base</button></>
+                <>
+                  <p className="text-[15px] font-semibold text-gray-700">No bases yet</p>
+                  <button
+                    onClick={() => setCreating(true)}
+                    className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700"
+                  >
+                    <Plus size={14} /> Create a base
+                  </button>
+                </>
               )}
             </div>
           ) : viewMode === "list" ? (
