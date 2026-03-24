@@ -148,6 +148,48 @@ export function Grid({
   });
 
   const addRecord = api.record.create.useMutation({
+    onMutate: async () => {
+      await utils.record.list.cancel(queryInput);
+      const previous = utils.record.list.getInfiniteData(queryInput);
+
+      const tempId = crypto.randomUUID();
+      const tempRecord: RecordRow = {
+        id:              tempId,
+        tableId:         table.id,
+        createdAt:       new Date(),
+        updatedAt:       new Date(),
+        position:        null,
+        sortValueText:   null,
+        sortValueNumber: null,
+        userId:          null,
+        cells: fields.map((f) => ({
+          recordId:    tempId,
+          fieldId:     f.id,
+          valueText:   null,
+          valueNumber: null,
+        })),
+      };
+
+      utils.record.list.setInfiniteData(queryInput, (old) => {
+        if (!old) return old;
+        const pages = old.pages;
+        const lastPage = pages[pages.length - 1];
+        if (!lastPage) return old;
+        return {
+          ...old,
+          pages: [
+            ...pages.slice(0, -1),
+            { ...lastPage, records: [...lastPage.records, tempRecord] },
+          ],
+        };
+      });
+
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      if (context?.previous)
+        utils.record.list.setInfiniteData(queryInput, context.previous);
+    },
     onSettled: () => void utils.record.list.invalidate({ tableId: table.id }),
   });
 
