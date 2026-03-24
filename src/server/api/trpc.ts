@@ -9,6 +9,8 @@
 import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { getServerSession, type Session } from "next-auth";
+import { authOptions } from "~/server/auth";
 
 import { db } from "~/server/db";
 
@@ -30,12 +32,12 @@ export type AuthSession = { user: { id: string } };
 /** Explicit context type so middleware sees session as AuthSession | null. */
 export type Context = {
   db: typeof db;
-  session: AuthSession | null;
+  session: Session | null;
   headers: Headers;
 };
 
 export const createTRPCContext = async (opts: { headers: Headers }): Promise<Context> => {
-  const session: AuthSession | null = null;
+  const session = await getServerSession(authOptions);
   return {
     db,
     session,
@@ -140,4 +142,7 @@ export const publicProcedure = t.procedure;
 // });
 
 // export const protectedProcedure = t.procedure.use(enforceAuth);
-export const protectedProcedure = t.procedure;
+export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
+  if (!ctx.session?.user) throw new TRPCError({ code: "UNAUTHORIZED" });
+  return next({ ctx: { ...ctx, session: ctx.session } });
+});;

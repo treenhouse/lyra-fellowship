@@ -19,6 +19,9 @@ import {
 import { api, type RouterOutputs } from "~/trpc/react";
 import { type FieldType } from "../../../../generated/prisma";
 import Sidebar from "./sidebar";
+import { getServerSession } from "next-auth";
+import { authOptions } from "~/server/auth";
+import { redirect } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TableWithMeta    = RouterOutputs["table"]["getById"];
@@ -95,6 +98,22 @@ function FilterPanel({ viewId, tableId, fields, onClose }: { viewId: string; tab
     },
   });
   const deleteFilter = api.view.deleteFilter.useMutation({
+    onMutate: async ({ id }) => {
+      await utils.view.getWithConfig.cancel({ id: viewId });
+      const previous = utils.view.getWithConfig.getData({ id: viewId });
+      utils.view.getWithConfig.setData({ id: viewId }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          filters: old.filters.filter((f) => f.id !== id),
+        };
+      });
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      // Rollback on error
+      utils.view.getWithConfig.setData({ id: viewId }, context?.previous);
+    },
     onSuccess: () => { void utils.view.getWithConfig.invalidate({ id: viewId }); void utils.record.list.invalidate(); },
   });
 

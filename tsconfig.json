@@ -36,7 +36,8 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    ".next/types/**/*.ts"
-  ],
+    ".next/types/**/*.ts",
+    "src/custom.d.ts"
+, "src/middleware.ts.bak"  ],
   "exclude": ["node_modules", "generated"]
 }

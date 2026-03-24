@@ -1,7 +1,6 @@
 "use client";
 
-// src/app/page.tsx
-
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -238,6 +237,8 @@ export default function HomePage() {
   const [creating,  setCreating]  = useState(false);
   const [search,    setSearch]    = useState("");
   const [viewMode,  setViewMode]  = useState<"list" | "grid">("list");
+  const { data: session } = useSession();
+  // to do: make sign in/out button
 
   const { data, isLoading } = api.base.list.useQuery();
   const bases    = (data ?? []);
@@ -320,7 +321,9 @@ export default function HomePage() {
             }
           </div>
           <div className="ml-auto">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-[13px] font-semibold">D</div>
+            <button onClick={() => signOut()} className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-[13px] font-semibold">
+              Sign out ({session?.user?.email})
+            </button>
           </div>
         </header>
 
