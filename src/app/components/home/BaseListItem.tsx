@@ -32,7 +32,7 @@ export function BaseListItem({ base }: { base: BaseWithCount }) {
     <>
       <div
         className="group relative flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-        onClick={() => !menuOpen && router.push(`/base/${base.id}`)}
+        onClick={() => !menuOpen && router.push(`/${base.id}`)}
       >
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold text-[14px]"

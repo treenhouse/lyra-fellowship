@@ -20,7 +20,7 @@ export function BaseGridCard({ base }: { base: BaseWithCount }) {
     <>
       <div
         className="group relative flex flex-col gap-2 p-4 rounded-xl border border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all"
-        onClick={() => !menuOpen && router.push(`/base/${base.id}`)}
+        onClick={() => !menuOpen && router.push(`/${base.id}`)}
       >
         <div className="flex items-start justify-between">
           <div
