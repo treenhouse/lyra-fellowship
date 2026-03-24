@@ -89,7 +89,7 @@ export function FilterPanel({
       const prevRecords = utils.record.list.getData(recordKey);
 
       const patchedFilter = {
-        id:       input.id!,
+        id:       input.id,
         viewId,
         fieldId:  input.fieldId,
         operator: input.operator,
