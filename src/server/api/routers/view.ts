@@ -135,6 +135,7 @@ export const viewRouter = createTRPCRouter({
           },
           sorts: { create: src.sorts.map(({ viewId: _v, id: _i, ...s }) => s) },
         },
+        select: { id: true, tableId: true, name: true, position: true, createdAt: true },
       });
     }),
 
