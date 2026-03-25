@@ -157,6 +157,7 @@ model View {
   id        String   @id @default(uuid())
   tableId   String
   name      String
+  position  Int?
   createdAt DateTime @default(now())
 
   table Table @relation(fields: [tableId], references: [id], onDelete: Cascade)

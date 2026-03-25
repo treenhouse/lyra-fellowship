@@ -83,7 +83,8 @@ export const viewRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ tableId: z.string().uuid(), name: z.string().min(1).max(100) }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.view.create({ data: input });
+      const count = await ctx.db.view.count({ where: { tableId: input.tableId } });
+      return ctx.db.view.create({ data: { tableId: input.tableId, name: input.name, position: count } });
     }),
 
   update: publicProcedure
@@ -96,6 +97,45 @@ export const viewRouter = createTRPCRouter({
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.view.delete({ where: { id: input.id } });
+    }),
+
+  reorder: publicProcedure
+    .input(z.object({
+      tableId: z.string().uuid(),
+      orderedIds: z.array(z.string().uuid()),
+    }))
+    .mutation(async ({ ctx, input }): Promise<void> => {
+      await ctx.db.$transaction(
+        input.orderedIds.map((id, idx) =>
+          ctx.db.view.update({ where: { id }, data: { position: idx } })
+        )
+      );
+    }),
+
+  duplicate: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const src = await ctx.db.view.findUnique({
+        where: { id: input.id },
+        include: { filters: true, sorts: true },
+      });
+      if (!src) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const count = await ctx.db.view.count({ where: { tableId: src.tableId } });
+      return ctx.db.view.create({
+        data: {
+          tableId:  src.tableId,
+          name:     `${src.name} (copy)`,
+          position: count,
+          filters: {
+            create: src.filters.map(({ viewId: _v, id: _i, value, ...f }) => ({
+              ...f,
+              value: value === null ? Prisma.DbNull : value ?? Prisma.DbNull,
+            })),
+          },
+          sorts: { create: src.sorts.map(({ viewId: _v, id: _i, ...s }) => s) },
+        },
+      });
     }),
 
   upsertFilter: publicProcedure

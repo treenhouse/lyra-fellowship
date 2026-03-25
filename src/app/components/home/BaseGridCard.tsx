@@ -10,7 +10,12 @@ import { avatarColor, initials } from "./BaseListItem";
 
 type BaseWithCount = RouterOutputs["base"]["list"][number];
 
-export function BaseGridCard({ base }: { base: BaseWithCount }) {
+interface Props {
+  base: BaseWithCount;
+  lastOpened: string;
+}
+
+export function BaseGridCard({ base, lastOpened }: Props) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -19,47 +24,45 @@ export function BaseGridCard({ base }: { base: BaseWithCount }) {
   return (
     <>
       <div
-        className="group relative flex flex-col gap-2 p-4 rounded-xl border border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all"
+        className="group relative flex items-center gap-3 p-3 rounded-lg shadow-sm border border-gray-300 bg-white hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all"
         onClick={() => !menuOpen && router.push(`/${base.id}`)}
       >
-        <div className="flex items-start justify-between">
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-[14px]"
-            style={{ backgroundColor: color }}
+        <div
+          className="w-13 h-13 rounded-lg m-2 flex items-center justify-center flex-shrink-0 text-white font-semi-bold text-[18px]"
+          style={{ backgroundColor: color }}
+        >
+          {initials(base.name)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-semibold text-gray-900 truncate">{base.name}</p>
+          <p className="text-[12px] text-gray-400 mt-0.5">{lastOpened}</p>
+        </div>
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+          <button
+            onClick={(e) => e.stopPropagation()}
+            className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-yellow-500"
+            title="Star"
           >
-            {initials(base.name)}
-          </div>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+            <Star size={13} />
+          </button>
+          <div className="relative">
             <button
-              onClick={(e) => e.stopPropagation()}
-              className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-yellow-500"
+              onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
+              className="p-1 rounded hover:bg-gray-100 text-gray-400"
             >
-              <Star size={13} />
+              <MoreHorizontal size={13} />
             </button>
-            <div className="relative">
-              <button
-                onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
-                className="p-1 rounded hover:bg-gray-100 text-gray-400"
-              >
-                <MoreHorizontal size={13} />
-              </button>
-              {menuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-20"
-                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
-                  />
-                  <BaseMenu base={base} onRename={() => setRenaming(true)} onClose={() => setMenuOpen(false)} />
-                </>
-              )}
-            </div>
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
+                />
+                <BaseMenu base={base} onRename={() => setRenaming(true)} onClose={() => setMenuOpen(false)} />
+              </>
+            )}
           </div>
         </div>
-        <p className="text-[13px] font-semibold text-gray-900 truncate">{base.name}</p>
-        <p className="text-[11px] text-gray-400">
-          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
-          {(base._count as { tables: number }).tables} table{(base._count as { tables: number }).tables !== 1 ? "s" : ""}
-        </p>
       </div>
       {renaming && <RenameModal base={base} onClose={() => setRenaming(false)} />}
     </>

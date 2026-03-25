@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Plus, Search, Filter, Grid3X3, X, Loader2,
   ChevronDown, Settings, EyeOff, ArrowUpDown,
   Palette, AlignJustify, Share2, MonitorPlay,
   Wrench, Link, Users, DatabaseZap, FlaskConical,
+  MoreHorizontal, Trash2, GripVertical, Star, Pencil, Copy,
 } from "lucide-react";
-import { api, type RouterOutputs } from "~/trpc/react";
+import { api } from "~/trpc/react";
 import Sidebar from "../../../components/table/sidebar";
 import { Grid } from "../../../components/table/Grid";
 import { FilterPanel } from "../../../components/table/FilterPanel";
 import { SortPanel } from "../../../components/table/SortPanel";
 import { AddTableModal } from "../../../components/table/AddTableModal";
+import { HideFieldsPanel } from "../../../components/table/HideFieldsPanel";
 
-type TableWithMeta = RouterOutputs["table"]["getById"];
-type ViewRow       = TableWithMeta["views"][number];
 
 export default function ViewPage() {
   const { baseId, tableId, viewId } = useParams<{
@@ -32,8 +32,21 @@ export default function ViewPage() {
   const [isSaving,          setIsSaving]          = useState(false);
   const [filterOpen,        setFilterOpen]        = useState(false);
   const [sortOpen,          setSortOpen]          = useState(false);
+  const [hideFieldsOpen,    setHideFieldsOpen]    = useState(false);
+  const [hiddenFieldIds,    setHiddenFieldIds]    = useState<Set<string>>(new Set());
   const [recordCount,       setRecordCount]       = useState(0);
   const [seedLargeProgress, setSeedLargeProgress] = useState<{ done: number; total: number } | null>(null);
+
+  // View rename/delete/reorder state
+  const [renamingViewId,    setRenamingViewId]    = useState<string | null>(null);
+  const [renameValue,       setRenameValue]       = useState("");
+  const [viewMenuId,        setViewMenuId]        = useState<string | null>(null);
+  const [viewMenuPos,       setViewMenuPos]       = useState<{ top: number; left: number } | null>(null);
+  const [draggedViewId,     setDraggedViewId]     = useState<string | null>(null);
+  const [viewOrder,         setViewOrder]         = useState<string[]>([]);
+  // Ref so drag-end handler always reads the latest order without stale closures
+  const viewOrderRef = useRef<string[]>([]);
+  useEffect(() => { viewOrderRef.current = viewOrder; }, [viewOrder]);
 
   const { data: base, isLoading: baseLoading } = api.base.getById.useQuery({ id: baseId });
 
@@ -49,7 +62,8 @@ export default function ViewPage() {
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       const target = e.target as HTMLElement;
-      if (!target.closest("[data-panel]")) { setFilterOpen(false); setSortOpen(false); }
+      if (!target.closest("[data-panel]")) { setFilterOpen(false); setSortOpen(false); setHideFieldsOpen(false); }
+      if (!target.closest("[data-view-menu]")) { setViewMenuId(null); setViewMenuPos(null); }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -73,15 +87,88 @@ export default function ViewPage() {
   const utils = api.useUtils();
 
   const createView = api.view.create.useMutation({
-    onSuccess: async (newView) => {
-      await utils.table.getById.invalidate({ id: tableId });
+    onMutate: async (input) => {
+      await utils.table.getById.cancel({ id: tableId });
+      const prev  = utils.table.getById.getData({ id: tableId });
+      const tempId = crypto.randomUUID();
+      const tempView = { id: tempId, tableId, name: input.name, position: viewOrderRef.current.length, createdAt: new Date() };
+      utils.table.getById.setData({ id: tableId }, (old) => {
+        if (!old) return old;
+        return { ...old, views: [...old.views, tempView] };
+      });
+      setViewOrder((prev) => [...prev, tempId]);
+      return { prev, tempId };
+    },
+    onSuccess: (newView, _input, ctx) => {
+      if (!ctx) return;
+      setViewOrder((prev) => prev.map((id) => id === ctx.tempId ? newView.id : id));
+      utils.table.getById.setData({ id: tableId }, (old) => {
+        if (!old) return old;
+        return { ...old, views: old.views.map((v) => v.id === ctx.tempId ? newView : v) };
+      });
       router.push(`/${baseId}/${tableId}/${newView.id}`);
     },
+    onError: (_err, _input, ctx) => {
+      utils.table.getById.setData({ id: tableId }, ctx?.prev);
+      if (ctx) setViewOrder((prev) => prev.filter((id) => id !== ctx.tempId));
+    },
+    onSettled: () => utils.table.getById.invalidate({ id: tableId }),
+  });
+
+  const renameView = api.view.update.useMutation({
+    onMutate: async (input) => {
+      await utils.table.getById.cancel({ id: tableId });
+      const prev = utils.table.getById.getData({ id: tableId });
+      utils.table.getById.setData({ id: tableId }, (old) => {
+        if (!old) return old;
+        return { ...old, views: old.views.map((v) => v.id === input.id ? { ...v, name: input.name } : v) };
+      });
+      return { prev };
+    },
+    onError: (_err, _input, ctx) => {
+      utils.table.getById.setData({ id: tableId }, ctx?.prev);
+    },
+    onSettled: () => utils.table.getById.invalidate({ id: tableId }),
+  });
+
+  const deleteView = api.view.delete.useMutation({
+    onSuccess: async (deleted) => {
+      await utils.table.getById.invalidate({ id: tableId });
+      // Navigate away if deleted view was active
+      if (deleted.id === viewId) {
+        const remaining = (table?.views ?? []).filter((v) => v.id !== deleted.id);
+        if (remaining[0]) router.push(`/${baseId}/${tableId}/${remaining[0].id}`);
+        else router.push(`/${baseId}/${tableId}`);
+      }
+    },
+  });
+
+  const duplicateView = api.view.duplicate.useMutation({
+    onSuccess: async (copy) => {
+      await utils.table.getById.invalidate({ id: tableId });
+      router.push(`/${baseId}/${tableId}/${copy.id}`);
+    },
+  });
+
+  const reorderViews = api.view.reorder.useMutation({
+    onSettled: () => utils.table.getById.invalidate({ id: tableId }),
   });
 
   const seedFake = api.record.seedFake.useMutation({
     onSettled: () => void utils.record.list.invalidate({ tableId }),
   });
+
+  // Sync viewOrder from server — but only when the set of view IDs actually changes
+  // (not on every drag, which would undo the local reorder immediately)
+  useEffect(() => {
+    if (!table?.views) return;
+    const sorted = [...table.views].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+    const serverIds = sorted.map((v) => v.id);
+    setViewOrder((prev) => {
+      const sameSet = prev.length === serverIds.length && serverIds.every((id) => prev.includes(id));
+      return sameSet ? prev : serverIds;
+    });
+  }, [table?.views]);
 
   const handleCountChange = useCallback((n: number) => setRecordCount(n), []);
 
@@ -149,9 +236,32 @@ export default function ViewPage() {
           <div className="flex items-center gap-2 min-w-0">
             <button
               onClick={() => router.push("/")}
-              className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center flex-shrink-0 shadow-sm"
+              className="w-8 h-8 rounded-md bg-[#535965] flex items-center justify-center flex-shrink-0 shadow-sm"
             >
-              <span className="text-white font-black text-[13px]">A</span>
+              <svg width="30" height="24" viewBox="0 0 96 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Yellow — r=4 */}
+                <path d="
+                  M 44.4,6.8  Q 48,5    51.6,6.8
+                  L 76.4,19.2 Q 80,21   76.4,22.8
+                  L 51.6,35.2 Q 48,37   44.4,35.2
+                  L 19.6,22.8 Q 16,21   19.6,19.2 Z"
+                  fill="#FFFFFF"/>
+
+                {/* Blue — r=4 */}
+                <path d="
+                  M 78.4,25.8 Q 82,24   82,28
+                  L 82,52     Q 82,56   78.3,57.6
+                  L 53.7,68.4 Q 50,70   50,66
+                  L 50,44     Q 50,40   53.6,38.2 Z"
+                  fill="#FFFFFF"/>
+
+                {/* Red — r=3, right vertex moved to (46,40) for consistent (-2,+3) gap from yellow */}
+                <path d="
+                  M 16.7,25.3 Q 14,24   14,27
+                  L 14,49     Q 14,52   16.8,51
+                  L 43.2,41.1 Q 46,40   43.3,38.7 Z"
+                  fill="#FFFFFF"/>
+              </svg>
             </button>
             <div className="flex items-center gap-1 min-w-0">
               <span className="font-semibold text-gray-900 text-[15px] truncate">{base.name}</span>
@@ -168,8 +278,8 @@ export default function ViewPage() {
             ].map(({ label, active }) => (
               <button
                 key={label}
-                className={`px-4 h-full text-[13px] font-medium border-b-2 transition-colors ${
-                  active ? "text-gray-600 border-gray-600" : "text-gray-600 border-transparent hover:text-gray-900"
+                className={`mx-2 h-full text-[13px] font-medium border-b-2 transition-colors ${
+                  active ? "text-gray-900 border-gray-600" : "text-gray-600 border-transparent hover:text-gray-900"
                 }`}
               >
                 {label}
@@ -185,7 +295,7 @@ export default function ViewPage() {
             <button className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-500">
               <Link size={14} />
             </button>
-            <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-blue-600 text-white text-[13px] font-semibold hover:bg-blue-700">
+            <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gray-600 text-white text-[13px] font-semibold hover:bg-blue-700">
               Share
             </button>
           </div>
@@ -233,25 +343,54 @@ export default function ViewPage() {
           </button>
           <div className="flex-1" />
 
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100 whitespace-nowrap">
-            <EyeOff size={13} /> Hide fields
-          </button>
+          {/* Hide fields */}
+          <div className="relative">
+            <button
+              data-panel="hidefields"
+              onClick={() => { setHideFieldsOpen((v) => !v); setFilterOpen(false); setSortOpen(false); }}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap transition-colors ${
+                hiddenFieldIds.size > 0
+                  ? "bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <EyeOff size={13} />
+              {hiddenFieldIds.size > 0
+                ? `${hiddenFieldIds.size} hidden field${hiddenFieldIds.size !== 1 ? "s" : ""}`
+                : "Hide fields"
+              }
+            </button>
+            {hideFieldsOpen && table && (
+              <HideFieldsPanel
+                fields={table.fields}
+                hiddenFieldIds={hiddenFieldIds}
+                onToggle={(id) =>
+                  setHiddenFieldIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(id)) next.delete(id); else next.add(id);
+                    return next;
+                  })
+                }
+              />
+            )}
+          </div>
 
           {/* Filter */}
           <div className="relative">
             <button
               onClick={() => { setFilterOpen((v) => !v); setSortOpen(false); }}
               data-panel="filter"
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap hover:bg-gray-100 ${
-                filterOpen || activeFilterCount > 0 ? "text-blue-600" : "text-gray-600"
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap transition-colors ${
+                activeFilterCount > 0
+                  ? "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              <Filter size={13} /> Filter
-              {activeFilterCount > 0 && (
-                <span className="ml-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold px-1">
-                  {activeFilterCount}
-                </span>
-              )}
+              <Filter size={13} />
+              {activeFilterCount > 0
+                ? `Filtered by ${viewConfig?.filters.map((f) => f.field?.name).filter(Boolean).join(", ") ?? `${activeFilterCount} field${activeFilterCount !== 1 ? "s" : ""}`}`
+                : "Filter"
+              }
             </button>
             {filterOpen && table && (
               <FilterPanel
@@ -263,6 +402,7 @@ export default function ViewPage() {
             )}
           </div>
 
+          {/* Group */}
           <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] text-gray-600 hover:bg-gray-100 whitespace-nowrap">
             <Users size={13} /> Group
           </button>
@@ -272,16 +412,17 @@ export default function ViewPage() {
             <button
               onClick={() => { setSortOpen((v) => !v); setFilterOpen(false); }}
               data-panel="sort"
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap hover:bg-gray-100 ${
-                sortOpen || activeSortCount > 0 ? "text-blue-600" : "text-gray-600"
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap transition-colors ${
+                activeSortCount > 0
+                  ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              <ArrowUpDown size={13} /> Sort
-              {activeSortCount > 0 && (
-                <span className="ml-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold px-1">
-                  {activeSortCount}
-                </span>
-              )}
+              <ArrowUpDown size={13} />
+              {activeSortCount > 0
+                ? `Sorted by ${activeSortCount} field${activeSortCount !== 1 ? "s" : ""}`
+                : "Sort"
+              }
             </button>
             {sortOpen && table && (
               <SortPanel viewId={viewId} tableId={tableId} fields={table.fields} onClose={() => setSortOpen(false)} />
@@ -325,7 +466,7 @@ export default function ViewPage() {
               : <DatabaseZap size={13} />
             }
             {seedLargeProgress
-              ? `+100k (${(seedLargeProgress.done / 1000).toFixed(0)}k / ${seedLargeProgress.total / 1000}k)`
+              ? `+100k (${(seedLargeProgress.done / 1000).toFixed(0)}k / ${seedLargeProgress.total / 100}k)`
               : "+100k rows"
             }
           </button>
@@ -369,7 +510,7 @@ export default function ViewPage() {
               >
                 <Plus size={16} className="rounded text-gray-500 flex-shrink-0" /> Create new...
               </button>
-              <div className="flex items-center rounded gap-2 px-3 py-3 border-b border-gray-100">
+              <div className="flex items-center rounded gap-2 px-2 py-2 border-b border-gray-100">
                 <Search size={16} className="text-gray-400 flex-shrink-0" />
                 <input
                   placeholder="Find a view"
@@ -380,18 +521,81 @@ export default function ViewPage() {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto py-1">
-                {table?.views?.map((v: ViewRow) => (
-                  <button
-                    key={v.id}
-                    onClick={() => handleViewSelect(v.id)}
-                    className={`w-full flex items-center gap-2 px-4 py-2 text-[13px] transition-colors ${
-                      viewId === v.id ? "bg-gray-100 text-gray-700 font-medium" : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Grid3X3 size={13} className={viewId === v.id ? "text-blue-600" : "text-blue-500"} />
-                    {v.name}
-                  </button>
-                ))}
+                {viewOrder.map((vid) => {
+                  const v = table?.views?.find((x) => x.id === vid);
+                  if (!v) return null;
+                  const isActive   = viewId === v.id;
+                  const isRenaming = renamingViewId === v.id;
+                  return (
+                    <div
+                      key={v.id}
+                      draggable
+                      onDragStart={() => setDraggedViewId(v.id)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (!draggedViewId || draggedViewId === v.id) return;
+                        setViewOrder((prev) => {
+                          const next = prev.filter((id) => id !== draggedViewId);
+                          const idx  = next.indexOf(v.id);
+                          next.splice(idx, 0, draggedViewId);
+                          return next;
+                        });
+                      }}
+                      onDragEnd={() => {
+                        const finalOrder = viewOrderRef.current;
+                        setDraggedViewId(null);
+                        reorderViews.mutate({ tableId, orderedIds: finalOrder });
+                      }}
+                      className={`group w-full flex items-center gap-1.5 px-2 py-1.5 text-[13px] transition-colors cursor-pointer ${
+                        isActive ? "bg-blue-50 text-gray-800 font-medium" : "text-gray-700 hover:bg-gray-50"
+                      } ${draggedViewId === v.id ? "opacity-40" : ""}`}
+                      onClick={() => { if (!isRenaming) handleViewSelect(v.id); }}
+                    >
+                      <GripVertical size={12} className="text-gray-300 flex-shrink-0 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing" />
+                      <Grid3X3 size={13} className={isActive ? "text-blue-600 flex-shrink-0" : "text-blue-500 flex-shrink-0"} />
+                      {isRenaming ? (
+                        <input
+                          autoFocus
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              if (renameValue.trim()) renameView.mutate({ id: v.id, name: renameValue.trim() });
+                              setRenamingViewId(null);
+                            }
+                            if (e.key === "Escape") setRenamingViewId(null);
+                          }}
+                          onBlur={() => {
+                            if (renameValue.trim()) renameView.mutate({ id: v.id, name: renameValue.trim() });
+                            setRenamingViewId(null);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex-1 text-[13px] outline-none bg-white border border-blue-400 rounded px-1 py-0.5 min-w-0"
+                        />
+                      ) : (
+                        <span className="flex-1 truncate">{v.name}</span>
+                      )}
+                      {/* dots button — menu is rendered at page level to escape overflow:hidden */}
+                      <button
+                        data-view-menu
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          if (viewMenuId === v.id) {
+                            setViewMenuId(null);
+                            setViewMenuPos(null);
+                          } else {
+                            setViewMenuId(v.id);
+                            setViewMenuPos({ top: rect.bottom + 4, left: rect.left - 196 });
+                          }
+                        }}
+                        className="p-0.5 rounded hover:bg-gray-200 text-gray-400 opacity-0 group-hover:opacity-100 flex-shrink-0"
+                      >
+                        <MoreHorizontal size={13} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -411,6 +615,7 @@ export default function ViewPage() {
                   table={table}
                   viewId={viewId}
                   search={search}
+                  hiddenFieldIds={hiddenFieldIds}
                   onSavingChange={setIsSaving}
                   onCountChange={handleCountChange}
                 />
@@ -421,7 +626,7 @@ export default function ViewPage() {
                     {seedLargeProgress && (
                       <span className="ml-2 text-violet-500 inline-flex items-center gap-1">
                         <Loader2 size={10} className="animate-spin" />
-                        Seeding {seedLargeProgress.done.toLocaleString()} / {seedLargeProgress.total.toLocaleString()}…
+                        Seeding {seedLargeProgress.done.toLocaleString()} / 100k…
                       </span>
                     )}
                     {!seedLargeProgress && seedFake.isPending && (
@@ -454,6 +659,64 @@ export default function ViewPage() {
           />
         )}
       </div>
+
+      {/* View context menu — rendered at root to escape overflow:hidden on sidebar */}
+      {viewMenuId && viewMenuPos && (() => {
+        const menuView = table?.views?.find((x) => x.id === viewMenuId);
+        if (!menuView) return null;
+        return (
+          <div
+            data-view-menu
+            style={{ position: "fixed", top: viewMenuPos.top, left: viewMenuPos.left, zIndex: 999 }}
+            className="bg-white border border-gray-200 rounded-xl shadow-xl py-1.5 w-[220px]"
+          >
+            <button
+              onClick={() => setViewMenuId(null)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50"
+            >
+              <Star size={14} className="text-gray-400" />
+              Add to &apos;My favorites&apos;
+            </button>
+            <div className="my-1 border-t border-gray-100" />
+            <button
+              onClick={() => {
+                setRenamingViewId(menuView.id);
+                setRenameValue(menuView.name);
+                setViewMenuId(null);
+                setViewMenuPos(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50"
+            >
+              <Pencil size={14} className="text-gray-400" />
+              Rename view
+            </button>
+            <button
+              onClick={() => {
+                setViewMenuId(null);
+                setViewMenuPos(null);
+                duplicateView.mutate({ id: menuView.id });
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50"
+            >
+              <Copy size={14} className="text-gray-400" />
+              Duplicate view
+            </button>
+            <div className="my-1 border-t border-gray-100" />
+            <button
+              onClick={() => {
+                setViewMenuId(null);
+                setViewMenuPos(null);
+                deleteView.mutate({ id: menuView.id });
+              }}
+              disabled={(table?.views?.length ?? 0) <= 1}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Trash2 size={14} className="text-red-400" />
+              Delete view
+            </button>
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   useReactTable,
@@ -38,12 +38,14 @@ export function Grid({
   table,
   viewId,
   search,
+  hiddenFieldIds = new Set<string>(),
   onSavingChange,
   onCountChange,
 }: {
   table: TableWithMeta;
   viewId: string | null;
   search: string;
+  hiddenFieldIds?: Set<string>;
   onSavingChange: (v: boolean) => void;
   onCountChange?: (n: number) => void;
 }) {
@@ -54,16 +56,27 @@ export function Grid({
     limit:   PAGE_SIZE,
   }), [table.id, viewId, search]);
 
-  const [selected,      setSelected]      = useState<{ r: number; c: number } | null>(null);
-  const [editing,       setEditing]       = useState<{ r: number; c: number } | null>(null);
-  const [addingField,   setAddingField]   = useState(false);
-  const [checkedRows,   setCheckedRows]   = useState<Set<string>>(new Set());
-  const [allSelected,   setAllSelected]   = useState(false);
+  const [selected,        setSelected]        = useState<{ r: number; c: number } | null>(null);
+  const [editing,         setEditing]         = useState<{ r: number; c: number } | null>(null);
+  const [addingField,     setAddingField]     = useState(false);
+  const [checkedRows,     setCheckedRows]     = useState<Set<string>>(new Set());
+  const [allSelected,     setAllSelected]     = useState(false);
+  const [draggedRowId,    setDraggedRowId]    = useState<string | null>(null);
+  const [rowOrder,        setRowOrder]        = useState<string[]>([]);
+  const rowOrderRef = useRef<string[]>([]);
+  useEffect(() => { rowOrderRef.current = rowOrder; }, [rowOrder]);
 
   const utils  = api.useUtils();
   const fields = useMemo(
     () => [...table.fields].sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
     [table.fields]
+  );
+
+  // Columns visible in the grid — hidden fields are excluded from rendering
+  // but remain available for filtering/sorting (which use table.fields directly)
+  const visibleFields = useMemo(
+    () => fields.filter((f) => !hiddenFieldIds.has(f.id)),
+    [fields, hiddenFieldIds]
   );
 
   const {
@@ -77,10 +90,26 @@ export function Grid({
     staleTime: 30_000,
   });
 
-  const records = useMemo(
+  const rawRecords = useMemo(
     () => data?.pages.flatMap((p) => p.records) ?? [],
     [data]
   );
+
+  // Sync rowOrder when server data changes — only when the set of IDs actually changes
+  useEffect(() => {
+    if (!rawRecords.length) return;
+    const serverIds = rawRecords.map((r) => r.id);
+    setRowOrder((prev) => {
+      const sameSet = prev.length === serverIds.length && serverIds.every((id) => prev.includes(id));
+      return sameSet ? prev : serverIds;
+    });
+  }, [rawRecords]);
+
+  const records = useMemo(() => {
+    if (!draggedRowId || rowOrder.length === 0) return rawRecords;
+    const map = new Map(rawRecords.map((r) => [r.id, r]));
+    return rowOrder.map((id) => map.get(id)).filter((r): r is RecordRow => !!r);
+  }, [rawRecords, rowOrder, draggedRowId]);
 
   useEffect(() => {
     onCountChange?.(records.length);
@@ -216,6 +245,32 @@ export function Grid({
     onSettled: () => void utils.record.list.invalidate({ tableId: table.id }),
   });
 
+  const reorderRecords = api.record.reorder.useMutation({
+    onMutate: async ({ orderedIds }) => {
+      await utils.record.list.cancel(queryInput);
+      const previous = utils.record.list.getInfiniteData(queryInput);
+      utils.record.list.setInfiniteData(queryInput, (old) => {
+        if (!old) return old;
+        const allRecords = old.pages.flatMap((p) => p.records);
+        const map = new Map(allRecords.map((r) => [r.id, r]));
+        const reordered = orderedIds.map((id) => map.get(id)).filter((r): r is RecordRow => !!r);
+        const pageSizes = old.pages.map((p) => p.records.length);
+        let offset = 0;
+        const newPages = old.pages.map((page, i) => {
+          const slice = reordered.slice(offset, offset + (pageSizes[i] ?? 0));
+          offset += pageSizes[i] ?? 0;
+          return { ...page, records: slice };
+        });
+        return { ...old, pages: newPages };
+      });
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      utils.record.list.setInfiniteData(queryInput, context?.previous);
+    },
+    onSettled: () => void utils.record.list.invalidate({ tableId: table.id }),
+  });
+
   const deleteAllRecords = api.record.deleteByTable.useMutation({
     onMutate: async () => {
       await utils.record.list.cancel(queryInput);
@@ -241,10 +296,20 @@ export function Grid({
   function handleKeyNav(e: React.KeyboardEvent, ri: number, ci: number) {
     setEditing(null);
     if (e.key === "Tab")
-      setSelected(ci + 1 < fields.length ? { r: ri, c: ci + 1 } : ri + 1 < records.length ? { r: ri + 1, c: 0 } : null);
+      setSelected(ci + 1 < visibleFields.length ? { r: ri, c: ci + 1 } : ri + 1 < records.length ? { r: ri + 1, c: 0 } : null);
     if (e.key === "Enter")
       setSelected(ri + 1 < records.length ? { r: ri + 1, c: ci } : null);
   }
+
+  const toggleAll = useCallback(() => {
+    if (allSelected) {
+      setAllSelected(false);
+      setCheckedRows(new Set());
+    } else {
+      setAllSelected(true);
+      setCheckedRows(new Set(records.map((r) => r.id)));
+    }
+  }, [allSelected, records]);
 
   // ── TanStack Table (header + column sizing only) ─────────────────────────────
   const columns = useMemo<ColumnDef<RecordRow>[]>(() => {
@@ -271,15 +336,14 @@ export function Grid({
       header: () => <div className="w-full h-full" />,
       cell: () => null,
     };
-    const dataCols: ColumnDef<RecordRow>[] = fields.map((field) => ({
+    const dataCols: ColumnDef<RecordRow>[] = visibleFields.map((field) => ({
       id: field.id,
       size: COL_WIDTH,
       header: () => <FieldHeader field={field} tableId={table.id} />,
       cell: () => null,
     }));
     return [rowNumCol, expandCol, ...dataCols];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fields, table.id, allSelected]);
+  }, [visibleFields, table.id, allSelected, toggleAll]);
 
   const tanTable = useReactTable({
     data:              [],
@@ -312,16 +376,6 @@ export function Grid({
     });
   }
 
-  function toggleAll() {
-    if (allSelected) {
-      setAllSelected(false);
-      setCheckedRows(new Set());
-    } else {
-      setAllSelected(true);
-      setCheckedRows(new Set(records.map((r) => r.id)));
-    }
-  }
-
   // ── Keyboard nav ─────────────────────────────────────────────────────────────
   function handleGridKeyDown(e: React.KeyboardEvent) {
     if (addingField || editing) return;
@@ -350,13 +404,13 @@ export function Grid({
     const moves: Partial<Record<string, { r: number; c: number }>> = {
       ArrowDown:  { r: Math.min(r + 1, records.length - 1), c },
       ArrowUp:    { r: Math.max(r - 1, 0), c },
-      ArrowRight: { r, c: Math.min(c + 1, fields.length - 1) },
+      ArrowRight: { r, c: Math.min(c + 1, visibleFields.length - 1) },
       ArrowLeft:  { r, c: Math.max(c - 1, 0) },
     };
     if (moves[e.key]) { e.preventDefault(); setSelected(moves[e.key]!); return; }
     if (e.key === "Enter" || e.key === "F2") { e.preventDefault(); setEditing(selected); return; }
-    if ((e.key === "Delete" || e.key === "Backspace") && records[r] && fields[c]) {
-      commitCell(records[r].id, fields[c].id, "", fields[c].type); return;
+    if ((e.key === "Delete" || e.key === "Backspace") && records[r] && visibleFields[c]) {
+      commitCell(records[r].id, visibleFields[c].id, "", visibleFields[c].type); return;
     }
     if (!e.metaKey && !e.ctrlKey && e.key.length === 1) setEditing(selected);
   }
@@ -429,7 +483,25 @@ export function Grid({
                   return (
                     <div
                       key={virtualRow.key}
-                      className="flex group/row absolute top-0 left-0 w-full"
+                      draggable={!isLoader && !!record}
+                      onDragStart={() => record && setDraggedRowId(record.id)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (!draggedRowId || !record || draggedRowId === record.id) return;
+                        setRowOrder((prev) => {
+                          const next = prev.filter((id) => id !== draggedRowId);
+                          const idx = next.indexOf(record.id);
+                          next.splice(idx, 0, draggedRowId);
+                          return next;
+                        });
+                      }}
+                      onDragEnd={() => {
+                        if (draggedRowId) {
+                          reorderRecords.mutate({ tableId: table.id, orderedIds: rowOrderRef.current });
+                        }
+                        setDraggedRowId(null);
+                      }}
+                      className={`flex group/row absolute top-0 left-0 w-full ${draggedRowId && record && draggedRowId === record.id ? "opacity-40" : ""}`}
                       style={{ transform: `translateY(${virtualRow.start}px)`, height: ROW_HEIGHT }}
                     >
                       {isLoader ? (
@@ -461,7 +533,7 @@ export function Grid({
                             />
                             <GripVertical
                               size={13}
-                              className="absolute left-1.5 hidden group-hover/row:block text-gray-300"
+                              className="absolute left-1.5 hidden group-hover/row:block text-gray-300 cursor-grab active:cursor-grabbing"
                             />
                           </div>
 
@@ -476,8 +548,8 @@ export function Grid({
                             />
                           </div>
 
-                          {/* Data cells */}
-                          {fields.map((field, ci) => (
+                          {/* Data cells — only visible fields */}
+                          {visibleFields.map((field, ci) => (
                             <div
                               key={field.id}
                               className={`flex-shrink-0 border-b border-r border-[#dde1e3] overflow-hidden ${rowBg}`}
@@ -506,7 +578,7 @@ export function Grid({
             )}
 
             {/* ── Add record row ── */}
-            <div className="flex bg-white border-b border-[#dde1e3]">
+            <div className="flex bg-white border-b border-r border-[#dde1e3]">
               <div
                 onClick={() => addRecord.mutate({ tableId: table.id })}
                 className="flex items-center justify-center cursor-pointer hover:bg-gray-50 text-gray-400 hover:text-gray-600"
@@ -519,7 +591,7 @@ export function Grid({
                 <div
                   key={field.id}
                   onClick={() => addRecord.mutate({ tableId: table.id })}
-                  className="flex items-center px-2 text-gray-400 text-[12px] hover:bg-gray-50 cursor-pointer border-r border-[#dde1e3]"
+                  className="flex items-center px-2 text-gray-400 text-[12px] hover:bg-gray-50 cursor-pointer"
                   style={{ height: ROW_HEIGHT, width: getColSize(field.id) }}
                 />
               ))}
@@ -529,7 +601,7 @@ export function Grid({
           {/* Add field button */}
           <div
             onClick={() => setAddingField(true)}
-            className="flex items-center justify-center w-[40px] cursor-pointer bg-white border-b border-r border-[#dde1e3] text-gray-400 hover:text-gray-600 hover:bg-gray-100 sticky top-0 z-20"
+            className="flex items-center justify-center px-[40px] cursor-pointer bg-white border-b border-r border-[#dde1e3] text-gray-800 hover:text-gray-600 hover:bg-gray-100 sticky top-0 z-20"
             style={{ height: ROW_HEIGHT }}
           >
             <Plus size={14} />

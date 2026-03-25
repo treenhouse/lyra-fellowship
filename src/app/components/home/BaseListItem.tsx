@@ -22,7 +22,13 @@ export function initials(name: string) {
   return name.slice(0, 2);
 }
 
-export function BaseListItem({ base }: { base: BaseWithCount }) {
+interface Props {
+  base: BaseWithCount;
+  lastOpened: string;
+  workspace: string;
+}
+
+export function BaseListItem({ base, lastOpened, workspace }: Props) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -31,33 +37,41 @@ export function BaseListItem({ base }: { base: BaseWithCount }) {
   return (
     <>
       <div
-        className="group relative flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+        className="group relative flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
         onClick={() => !menuOpen && router.push(`/${base.id}`)}
       >
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold text-[14px]"
-          style={{ backgroundColor: color }}
-        >
-          {initials(base.name)}
-        </div>
-        <div className="flex-1 min-w-0">
+        {/* Name column */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold text-[12px]"
+            style={{ backgroundColor: color }}
+          >
+            {initials(base.name)}
+          </div>
           <p className="text-[14px] font-medium text-gray-900 truncate">{base.name}</p>
-          <p className="text-[12px] text-blue-600 mt-0.5">Open data</p>
         </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+
+        {/* Last opened column */}
+        <span className="w-44 text-[13px] text-gray-500 flex-shrink-0">{lastOpened}</span>
+
+        {/* Workspace column */}
+        <span className="w-44 text-[13px] text-gray-500 flex-shrink-0">{workspace}</span>
+
+        {/* Hover actions */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-4">
           <button
             onClick={(e) => e.stopPropagation()}
             className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-yellow-500 transition-colors"
             title="Star"
           >
-            <Star size={15} />
+            <Star size={14} />
           </button>
           <div className="relative">
             <button
               onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
               className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <MoreHorizontal size={15} />
+              <MoreHorizontal size={14} />
             </button>
             {menuOpen && (
               <>

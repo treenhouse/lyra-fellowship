@@ -2,7 +2,7 @@
 // src/server/api/routers/record.ts
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
-import { Prisma, type ViewFilter, type Field, type FieldType } from "../../../../generated/prisma";
+import { type Prisma, type ViewFilter, type Field, type FieldType } from "../../../../generated/prisma";
 
 function mapValue(fieldType: FieldType, raw: string | number | null) {
   if (raw == null) return { valueText: null, valueNumber: null };
@@ -347,5 +347,18 @@ export const recordRouter = createTRPCRouter({
     .input(z.object({ tableId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.record.deleteMany({ where: { tableId: input.tableId } });
+    }),
+
+  reorder: publicProcedure
+    .input(z.object({
+      tableId: z.string().uuid(),
+      orderedIds: z.array(z.string().uuid()),
+    }))
+    .mutation(async ({ ctx, input }): Promise<void> => {
+      await ctx.db.$transaction(
+        input.orderedIds.map((id, idx) =>
+          ctx.db.record.update({ where: { id }, data: { position: idx } })
+        )
+      );
     }),
 });

@@ -209,6 +209,7 @@ exports.Prisma.ViewScalarFieldEnum = {
   id: 'id',
   tableId: 'tableId',
   name: 'name',
+  position: 'position',
   createdAt: 'createdAt'
 };
 
