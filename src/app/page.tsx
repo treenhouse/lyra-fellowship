@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import {
   Search, Plus, Star, Home, Share2,
   Briefcase, ChevronRight, ChevronDown, LayoutTemplate,
@@ -13,6 +13,7 @@ import { api } from "~/trpc/react";
 import { CreateBaseModal } from "./components/home/CreateBaseModal";
 import { BaseListItem } from "./components/home/BaseListItem";
 import { BaseGridCard } from "./components/home/BaseGridCard";
+import { ProfilePanel } from "./components/home/ProfilePanel";
 
 function relativeTime(date: Date): string {
   const now = new Date();
@@ -43,9 +44,10 @@ const ACTION_CARDS = [
 ];
 
 export default function HomePage() {
-  const [creating, setCreating] = useState(false);
-  const [search,   setSearch]   = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [creating,     setCreating]     = useState(false);
+  const [search,       setSearch]       = useState("");
+  const [viewMode,     setViewMode]     = useState<"list" | "grid">("grid");
+  const [profileOpen,  setProfileOpen]  = useState(false);
   const { data: session } = useSession();
 
   const { data, isLoading } = api.base.list.useQuery();
@@ -132,41 +134,43 @@ export default function HomePage() {
           <button className="text-gray-500 hover:text-gray-700">
             <Bell size={18} />
           </button>
-          <button
-            onClick={() => signOut()}
-            className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-[13px] font-semibold hover:bg-blue-700"
-            title="Sign out"
-          >
-            {userInitial}
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setProfileOpen((v) => !v)}
+              className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-[13px] font-semibold hover:bg-blue-700"
+            >
+              {userInitial}
+            </button>
+            {profileOpen && <ProfilePanel onClose={() => setProfileOpen(false)} />}
+          </div>
         </div>
       </header>
 
       <div className="flex h-screen overflow-hidden bg-white font-sans">
         {/* ── Sidebar ── */}
-        <aside className="w-[300px] pt-3 flex-shrink-0 flex flex-col h-full border-r border-gray-200 bg-white">
-          <nav className="flex-1 px-3 py-1 overflow-y-auto space-y-0.5">
-            <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-[14px] font-semibold text-gray-900 bg-gray-100">
-              <Home size={16} /> Home
+        <aside className="w-14 lg:w-[240px] pt-3 flex-shrink-0 flex flex-col h-full border-r border-gray-200 bg-white transition-all duration-200">
+          <nav className="flex-1 px-2 py-1 overflow-y-auto space-y-0.5">
+            <button className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-2.5 px-2 py-2 rounded-lg text-[14px] font-semibold text-gray-900 bg-gray-100">
+              <Home size={16} className="flex-shrink-0" /> <span className="hidden lg:inline">Home</span>
             </button>
             <div>
-              <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-[14px] text-gray-700 hover:bg-gray-100">
-                <Star size={16} className="text-gray-500" />
-                <span className="flex-1 text-left">Starred</span>
-                <ChevronDown size={14} className="text-gray-400" />
+              <button className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-2.5 px-2 py-2 rounded-lg text-[14px] text-gray-700 hover:bg-gray-100">
+                <Star size={16} className="text-gray-500 flex-shrink-0" />
+                <span className="hidden lg:flex flex-1 text-left">Starred</span>
+                <ChevronDown size={14} className="text-gray-400 hidden lg:block" />
               </button>
-              <p className="ml-9 text-[12px] text-gray-400 px-1 pb-1 leading-relaxed">
+              <p className="ml-9 text-[12px] text-gray-400 px-1 pb-1 leading-relaxed hidden lg:block">
                 Your starred bases, interfaces, and workspaces will appear here
               </p>
             </div>
-            <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-[14px] text-gray-700 hover:bg-gray-100">
-              <Share2 size={16} className="text-gray-500" /> Shared
+            <button className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-2.5 px-2 py-2 rounded-lg text-[14px] text-gray-700 hover:bg-gray-100">
+              <Share2 size={16} className="text-gray-500 flex-shrink-0" /> <span className="hidden lg:inline">Shared</span>
             </button>
-            <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-[14px] text-gray-700 hover:bg-gray-100">
-              <Briefcase size={16} className="text-gray-500" />
-              <span className="flex-1 text-left">Workspaces</span>
-              <Plus size={14} className="text-gray-400" />
-              <ChevronRight size={14} className="text-gray-400" />
+            <button className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-2.5 px-2 py-2 rounded-lg text-[14px] text-gray-700 hover:bg-gray-100">
+              <Briefcase size={16} className="text-gray-500 flex-shrink-0" />
+              <span className="hidden lg:flex flex-1 text-left">Workspaces</span>
+              <Plus size={14} className="text-gray-400 hidden lg:block" />
+              <ChevronRight size={14} className="text-gray-400 hidden lg:block" />
             </button>
 
             <div className="my-2 border-t border-gray-200" />
@@ -176,30 +180,30 @@ export default function HomePage() {
               { icon: ShoppingBag,    label: "Marketplace"        },
               { icon: Upload,         label: "Import"             },
             ].map(({ icon: Icon, label }) => (
-              <button key={label} className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100">
-                <Icon size={15} className="text-gray-500" /> {label}
+              <button key={label} className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-2.5 px-2 py-2 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100">
+                <Icon size={15} className="text-gray-500 flex-shrink-0" /> <span className="hidden lg:inline">{label}</span>
               </button>
             ))}
           </nav>
 
-          <div className="p-3 border-t border-gray-200 flex-shrink-0">
+          <div className="p-2 lg:p-3 border-t border-gray-200 flex-shrink-0">
             <button
               onClick={() => setCreating(true)}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-blue-600 text-white text-[14px] font-semibold hover:bg-blue-700 transition-colors"
             >
-              <Plus size={16} /> Create
+              <Plus size={16} /> <span className="hidden lg:inline">Create</span>
             </button>
           </div>
         </aside>
 
         {/* ── Main ── */}
-        <div className="flex flex-col flex-1 min-w-0 bg-gray-100 items-center">
-          <main className="flex-1 overflow-y-auto">
+        <div className="flex flex-col flex-1 min-w-0 bg-gray-100">
+          <main className="flex-1 overflow-y-auto w-full">
             <div className="px-8 py-6">
               <h1 className="text-[28px] font-bold text-gray-900 mb-6">Home</h1>
 
               {/* Action cards */}
-              <div className="grid grid-cols-4 gap-3 mb-8 w-[1509px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 w-full">
                 {ACTION_CARDS.map(({ icon: Icon, label, desc }) => (
                   <button
                     key={label}

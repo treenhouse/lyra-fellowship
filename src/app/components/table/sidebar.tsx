@@ -1,9 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
+import { ProfilePanel } from "../home/ProfilePanel";
 
 export default function Sidebar() {
   const router = useRouter();
+    const { data: session } = useSession();
+    const userInitial = (session?.user?.name ?? session?.user?.email ?? "U")[0]?.toUpperCase() ?? "U";
+  
+    const [profileOpen,       setProfileOpen]       = useState(false);
 
   return (
     <div className="fixed left-0 top-0 w-[56px] h-screen bg-white border-r border-gray-200 flex flex-col items-center z-50">
@@ -75,12 +82,16 @@ export default function Sidebar() {
         </button>
 
         {/* Avatar */}
-        <button
-          title="Account"
-          className="w-[32px] h-[32px] rounded-full bg-gray-700 flex items-center justify-center text-white text-[12px] font-semibold hover:bg-gray-600"
-        >
-          D
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setProfileOpen((v) => !v)}
+            title="Account"
+            className="w-[32px] h-[32px] rounded-full bg-gray-700 flex items-center justify-center text-white text-[12px] font-semibold hover:bg-gray-600"
+          >
+            {userInitial}
+          </button>
+          {profileOpen && <ProfilePanel onClose={() => setProfileOpen(false)} side="right" />}
+        </div>
       </div>
     </div>
   );

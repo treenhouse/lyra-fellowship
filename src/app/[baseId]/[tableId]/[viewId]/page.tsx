@@ -586,7 +586,7 @@ export default function ViewPage() {
                             setViewMenuPos(null);
                           } else {
                             setViewMenuId(v.id);
-                            setViewMenuPos({ top: rect.bottom + 4, left: rect.left - 196 });
+                            setViewMenuPos({ top: rect.bottom + 4, left: rect.left });
                           }
                         }}
                         className="p-0.5 rounded hover:bg-gray-200 text-gray-400 opacity-0 group-hover:opacity-100 flex-shrink-0"
