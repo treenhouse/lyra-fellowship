@@ -210,15 +210,26 @@ exports.Prisma.ViewScalarFieldEnum = {
   tableId: 'tableId',
   name: 'name',
   position: 'position',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  filterConjunction: 'filterConjunction'
 };
 
 exports.Prisma.ViewFilterScalarFieldEnum = {
   id: 'id',
   viewId: 'viewId',
+  groupId: 'groupId',
   fieldId: 'fieldId',
   operator: 'operator',
-  value: 'value'
+  value: 'value',
+  position: 'position'
+};
+
+exports.Prisma.ViewFilterGroupScalarFieldEnum = {
+  id: 'id',
+  viewId: 'viewId',
+  conjunction: 'conjunction',
+  connector: 'connector',
+  position: 'position'
 };
 
 exports.Prisma.ViewSortScalarFieldEnum = {
@@ -277,6 +288,7 @@ exports.Prisma.ModelName = {
   CellValue: 'CellValue',
   View: 'View',
   ViewFilter: 'ViewFilter',
+  ViewFilterGroup: 'ViewFilterGroup',
   ViewSort: 'ViewSort'
 };
 

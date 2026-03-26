@@ -91,7 +91,7 @@ export default function ViewPage() {
       await utils.table.getById.cancel({ id: tableId });
       const prev  = utils.table.getById.getData({ id: tableId });
       const tempId = crypto.randomUUID();
-      const tempView = { id: tempId, tableId, name: input.name, position: viewOrderRef.current.length, createdAt: new Date() };
+      const tempView = { id: tempId, tableId, name: input.name, position: viewOrderRef.current.length, createdAt: new Date(), filterConjunction: "and" };
       utils.table.getById.setData({ id: tableId }, (old) => {
         if (!old) return old;
         return { ...old, views: [...old.views, tempView] };
@@ -333,7 +333,7 @@ export default function ViewPage() {
         </div>
 
         {/* ── Toolbar ── */}
-        <div className="flex-shrink-0 flex items-center h-[48px] border-b border-gray-200 bg-white px-2 gap-0">
+        <div className="flex-shrink-0 flex items-center h-[48px] border-b border-gray-200 bg-white px-2 gap-1">
           <button className="p-2 rounded hover:bg-gray-100 text-gray-500 mr-0.5">
             <AlignJustify size={15} />
           </button>
@@ -350,7 +350,7 @@ export default function ViewPage() {
               onClick={() => { setHideFieldsOpen((v) => !v); setFilterOpen(false); setSortOpen(false); }}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap transition-colors ${
                 hiddenFieldIds.size > 0
-                  ? "bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 font-medium"
+                  ? "bg-blue-100 text-gray-600 hover:bg-blue-200 font-medium"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -382,7 +382,7 @@ export default function ViewPage() {
               data-panel="filter"
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap transition-colors ${
                 activeFilterCount > 0
-                  ? "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 font-medium"
+                  ? "bg-green-100 text-gray-600 hover:bg-green-200 font-medium"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -414,7 +414,7 @@ export default function ViewPage() {
               data-panel="sort"
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] whitespace-nowrap transition-colors ${
                 activeSortCount > 0
-                  ? "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 font-medium"
+                  ? "bg-orange-100 text-gray-600 hover:bg-orange-200 font-medium"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -547,7 +547,7 @@ export default function ViewPage() {
                         reorderViews.mutate({ tableId, orderedIds: finalOrder });
                       }}
                       className={`group w-full flex items-center gap-1.5 px-2 py-1.5 text-[13px] transition-colors cursor-pointer ${
-                        isActive ? "bg-blue-50 text-gray-800 font-medium" : "text-gray-700 hover:bg-gray-50"
+                        isActive ? "bg-gray-100 text-gray-800 font-medium" : "text-gray-700 hover:bg-gray-50"
                       } ${draggedViewId === v.id ? "opacity-40" : ""}`}
                       onClick={() => { if (!isRenaming) handleViewSelect(v.id); }}
                     >

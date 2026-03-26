@@ -31,34 +31,22 @@ async function recomputeSortValues(
   tableId: string,
   fieldId: string
 ) {
-  // 1️⃣ get field type
-  const field = await ctx.db.field.findUnique({
-    where: { id: fieldId },
-  });
+  const field = await ctx.db.field.findUnique({ where: { id: fieldId } });
   if (!field) throw new Error("Field not found");
 
-  // 2️⃣ get records + relevant cell
   const records = await ctx.db.record.findMany({
     where: { tableId },
-    include: {
-      cells: {
-        where: { fieldId },
-      },
-    },
+    include: { cells: { where: { fieldId } } },
   });
 
-  // 3️⃣ update sort cache
   await ctx.db.$transaction(
     records.map((r) => {
       const cell = r.cells[0];
-
       return ctx.db.record.update({
         where: { id: r.id },
         data: {
-          sortValueText:
-            field.type === "text" ? cell?.valueText ?? null : null,
-          sortValueNumber:
-            field.type === "number" ? cell?.valueNumber ?? null : null,
+          sortValueText:   field.type === "text"   ? cell?.valueText   ?? null : null,
+          sortValueNumber: field.type === "number" ? cell?.valueNumber ?? null : null,
         },
       });
     })
@@ -72,8 +60,9 @@ export const viewRouter = createTRPCRouter({
       const view = await ctx.db.view.findUnique({
         where: { id: input.id },
         include: {
-          filters: { include: { field: true } },
-          sorts: { include: { field: true }, orderBy: { order: "asc" } },
+          filters:      { include: { field: true } },
+          filterGroups: { include: { filters: { include: { field: true } } } },
+          sorts:        { include: { field: true }, orderBy: { order: "asc" } },
         },
       });
       if (!view) throw new TRPCError({ code: "NOT_FOUND" });
@@ -101,7 +90,7 @@ export const viewRouter = createTRPCRouter({
 
   reorder: publicProcedure
     .input(z.object({
-      tableId: z.string().uuid(),
+      tableId:    z.string().uuid(),
       orderedIds: z.array(z.string().uuid()),
     }))
     .mutation(async ({ ctx, input }): Promise<void> => {
@@ -117,7 +106,11 @@ export const viewRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const src = await ctx.db.view.findUnique({
         where: { id: input.id },
-        include: { filters: true, sorts: true },
+        include: {
+          filters:      { where: { groupId: null } },
+          filterGroups: { include: { filters: true } },
+          sorts:        true,
+        },
       });
       if (!src) throw new TRPCError({ code: "NOT_FOUND" });
 
@@ -128,9 +121,20 @@ export const viewRouter = createTRPCRouter({
           name:     `${src.name} (copy)`,
           position: count,
           filters: {
-            create: src.filters.map(({ viewId: _v, id: _i, value, ...f }) => ({
+            create: src.filters.map(({ viewId: _v, id: _i, groupId: _g, value, ...f }) => ({
               ...f,
               value: value === null ? Prisma.DbNull : value ?? Prisma.DbNull,
+            })),
+          },
+          filterGroups: {
+            create: src.filterGroups.map(({ viewId: _v, id: _i, filters, ...g }) => ({
+              ...g,
+              filters: {
+                create: filters.map(({ viewId: _fv, id: _fi, groupId: _fg, value, ...f }) => ({
+                  ...f,
+                  value: value === null ? Prisma.DbNull : value ?? Prisma.DbNull,
+                })),
+              },
             })),
           },
           sorts: { create: src.sorts.map(({ viewId: _v, id: _i, ...s }) => s) },
@@ -139,35 +143,54 @@ export const viewRouter = createTRPCRouter({
       });
     }),
 
-  upsertFilter: publicProcedure
-  .input(
-    z.object({
-      id:       z.string().uuid(),
-      viewId:   z.string().uuid(),
-      fieldId:  z.string().uuid(),
-      operator: FilterOperatorSchema,
-      value:    z.union([z.string(), z.number(), z.null()]).optional(),
-    })
-  )
-  .mutation(async ({ ctx, input }) => {
-    const value = toJsonValue(input.value);
+  setFilterConjunction: publicProcedure
+    .input(z.object({ id: z.string().uuid(), conjunction: z.enum(["and", "or"]) }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.view.update({
+        where: { id: input.id },
+        data: { filterConjunction: input.conjunction },
+      });
+    }),
 
-    return ctx.db.viewFilter.upsert({
-      where: { id: input.id },
-      update: {
-        operator: input.operator,
-        value,
-        field: { connect: { id: input.fieldId } },
-      },
-      create: {
-        id:       input.id,
-        viewId:   input.viewId,
-        fieldId:  input.fieldId,
-        operator: input.operator,
-        value,
-      },
-    });
-  }),
+  // ── Filters ──────────────────────────────────────────────────────────────
+
+  upsertFilter: publicProcedure
+    .input(
+      z.object({
+        id:       z.string().uuid(),
+        viewId:   z.string().uuid(),
+        groupId:  z.string().uuid().nullable().optional(),
+        fieldId:  z.string().uuid(),
+        operator: FilterOperatorSchema,
+        value:    z.union([z.string(), z.number(), z.null()]).optional(),
+        position: z.number().int().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const value = toJsonValue(input.value);
+
+      return ctx.db.viewFilter.upsert({
+        where: { id: input.id },
+        update: {
+          operator: input.operator,
+          value,
+          position: input.position,
+          field: { connect: { id: input.fieldId } },
+          ...(input.groupId !== undefined
+            ? { group: input.groupId ? { connect: { id: input.groupId } } : { disconnect: true } }
+            : {}),
+        },
+        create: {
+          id:      input.id,
+          viewId:  input.viewId,
+          fieldId: input.fieldId,
+          operator: input.operator,
+          value,
+          position: input.position,
+          ...(input.groupId ? { groupId: input.groupId } : {}),
+        },
+      });
+    }),
 
   deleteFilter: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
@@ -175,54 +198,86 @@ export const viewRouter = createTRPCRouter({
       return ctx.db.viewFilter.delete({ where: { id: input.id } });
     }),
 
+  // ── Filter Groups ─────────────────────────────────────────────────────────
+
+  upsertFilterGroup: publicProcedure
+    .input(
+      z.object({
+        id:          z.string().uuid(),
+        viewId:      z.string().uuid(),
+        conjunction: z.enum(["and", "or"]).default("and"),
+        connector:   z.enum(["and", "or"]).default("and"),
+        position:    z.number().int().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.viewFilterGroup.upsert({
+        where: { id: input.id },
+        update: {
+          conjunction: input.conjunction,
+          connector:   input.connector,
+          position:    input.position,
+        },
+        create: {
+          id:          input.id,
+          viewId:      input.viewId,
+          conjunction: input.conjunction,
+          connector:   input.connector,
+          position:    input.position ?? 0,
+        },
+      });
+    }),
+
+  deleteFilterGroup: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.viewFilterGroup.delete({ where: { id: input.id } });
+    }),
+
+  // ── Sorts ─────────────────────────────────────────────────────────────────
+
   upsertSort: publicProcedure
-  .input(
-    z.object({
-      id:        z.string().uuid().optional(),
-      viewId:    z.string().uuid(),
-      fieldId:   z.string().uuid(),
-      direction: SortDirectionSchema,
-      order:     z.number().int().optional(),
-    })
-  )
-  .mutation(async ({ ctx, input }) => {
-    // 1️⃣ upsert sort
-    const sort = input.id
-      ? await ctx.db.viewSort.update({
-          where: { id: input.id },
-          data: {
-            direction: input.direction,
-            order:     input.order,
-            field:     { connect: { id: input.fieldId } },
-          },
-        })
-      : await ctx.db.viewSort.create({
-          data: {
-            viewId:    input.viewId,
-            fieldId:   input.fieldId,
-            direction: input.direction,
-            order:     input.order,
-          },
-        });
+    .input(
+      z.object({
+        id:        z.string().uuid().optional(),
+        viewId:    z.string().uuid(),
+        fieldId:   z.string().uuid(),
+        direction: SortDirectionSchema,
+        order:     z.number().int().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const sort = input.id
+        ? await ctx.db.viewSort.update({
+            where: { id: input.id },
+            data: {
+              direction: input.direction,
+              order:     input.order,
+              field:     { connect: { id: input.fieldId } },
+            },
+          })
+        : await ctx.db.viewSort.create({
+            data: {
+              viewId:    input.viewId,
+              fieldId:   input.fieldId,
+              direction: input.direction,
+              order:     input.order,
+            },
+          });
 
-    // 2️⃣ get view → need tableId
-    const view = await ctx.db.view.findUnique({
-      where: { id: input.viewId },
-    });
-    if (!view) throw new Error("View not found");
+      const view = await ctx.db.view.findUnique({ where: { id: input.viewId } });
+      if (!view) throw new Error("View not found");
 
-    // 3️⃣ recompute ONLY for primary sort (order = 0 or smallest)
-    const primarySort = await ctx.db.viewSort.findFirst({
-      where: { viewId: input.viewId },
-      orderBy: { order: "asc" },
-    });
+      const primarySort = await ctx.db.viewSort.findFirst({
+        where: { viewId: input.viewId },
+        orderBy: { order: "asc" },
+      });
+      if (primarySort) {
+        await recomputeSortValues(ctx, view.tableId, primarySort.fieldId);
+      }
 
-    if (primarySort) {
-      await recomputeSortValues(ctx, view.tableId, primarySort.fieldId);
-    }
-
-    return sort;
-  }),
+      return sort;
+    }),
 
   deleteSort: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
@@ -236,8 +291,20 @@ export const viewRouter = createTRPCRouter({
       return ctx.db.view.findUnique({
         where: { id: input.id },
         include: {
-          filters: { include: { field: true } },
-          sorts:   { include: { field: true }, orderBy: { order: "asc" } },
+          filters: {
+            where:   { groupId: null },
+            include: { field: true },
+          },
+          filterGroups: {
+            include: {
+              filters: {
+                include:  { field: true },
+                orderBy:  { position: "asc" },
+              },
+            },
+            orderBy: { position: "asc" },
+          },
+          sorts: { include: { field: true }, orderBy: { order: "asc" } },
         },
       });
     }),

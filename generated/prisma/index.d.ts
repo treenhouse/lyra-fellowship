@@ -74,6 +74,11 @@ export type View = $Result.DefaultSelection<Prisma.$ViewPayload>
  */
 export type ViewFilter = $Result.DefaultSelection<Prisma.$ViewFilterPayload>
 /**
+ * Model ViewFilterGroup
+ * 
+ */
+export type ViewFilterGroup = $Result.DefaultSelection<Prisma.$ViewFilterGroupPayload>
+/**
  * Model ViewSort
  * 
  */
@@ -345,6 +350,16 @@ export class PrismaClient<
     * ```
     */
   get viewFilter(): Prisma.ViewFilterDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.viewFilterGroup`: Exposes CRUD operations for the **ViewFilterGroup** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ViewFilterGroups
+    * const viewFilterGroups = await prisma.viewFilterGroup.findMany()
+    * ```
+    */
+  get viewFilterGroup(): Prisma.ViewFilterGroupDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.viewSort`: Exposes CRUD operations for the **ViewSort** model.
@@ -808,6 +823,7 @@ export namespace Prisma {
     CellValue: 'CellValue',
     View: 'View',
     ViewFilter: 'ViewFilter',
+    ViewFilterGroup: 'ViewFilterGroup',
     ViewSort: 'ViewSort'
   };
 
@@ -827,7 +843,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "session" | "user" | "verificationToken" | "base" | "baseMember" | "table" | "field" | "record" | "cellValue" | "view" | "viewFilter" | "viewSort"
+      modelProps: "account" | "session" | "user" | "verificationToken" | "base" | "baseMember" | "table" | "field" | "record" | "cellValue" | "view" | "viewFilter" | "viewFilterGroup" | "viewSort"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1719,6 +1735,80 @@ export namespace Prisma {
           }
         }
       }
+      ViewFilterGroup: {
+        payload: Prisma.$ViewFilterGroupPayload<ExtArgs>
+        fields: Prisma.ViewFilterGroupFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ViewFilterGroupFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ViewFilterGroupFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>
+          }
+          findFirst: {
+            args: Prisma.ViewFilterGroupFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ViewFilterGroupFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>
+          }
+          findMany: {
+            args: Prisma.ViewFilterGroupFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>[]
+          }
+          create: {
+            args: Prisma.ViewFilterGroupCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>
+          }
+          createMany: {
+            args: Prisma.ViewFilterGroupCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ViewFilterGroupCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>[]
+          }
+          delete: {
+            args: Prisma.ViewFilterGroupDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>
+          }
+          update: {
+            args: Prisma.ViewFilterGroupUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>
+          }
+          deleteMany: {
+            args: Prisma.ViewFilterGroupDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ViewFilterGroupUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ViewFilterGroupUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>[]
+          }
+          upsert: {
+            args: Prisma.ViewFilterGroupUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ViewFilterGroupPayload>
+          }
+          aggregate: {
+            args: Prisma.ViewFilterGroupAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateViewFilterGroup>
+          }
+          groupBy: {
+            args: Prisma.ViewFilterGroupGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ViewFilterGroupGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ViewFilterGroupCountArgs<ExtArgs>
+            result: $Utils.Optional<ViewFilterGroupCountAggregateOutputType> | number
+          }
+        }
+      }
       ViewSort: {
         payload: Prisma.$ViewSortPayload<ExtArgs>
         fields: Prisma.ViewSortFieldRefs
@@ -1901,6 +1991,7 @@ export namespace Prisma {
     cellValue?: CellValueOmit
     view?: ViewOmit
     viewFilter?: ViewFilterOmit
+    viewFilterGroup?: ViewFilterGroupOmit
     viewSort?: ViewSortOmit
   }
 
@@ -2219,11 +2310,13 @@ export namespace Prisma {
 
   export type ViewCountOutputType = {
     filters: number
+    filterGroups: number
     sorts: number
   }
 
   export type ViewCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     filters?: boolean | ViewCountOutputTypeCountFiltersArgs
+    filterGroups?: boolean | ViewCountOutputTypeCountFilterGroupsArgs
     sorts?: boolean | ViewCountOutputTypeCountSortsArgs
   }
 
@@ -2248,8 +2341,46 @@ export namespace Prisma {
   /**
    * ViewCountOutputType without action
    */
+  export type ViewCountOutputTypeCountFilterGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ViewFilterGroupWhereInput
+  }
+
+  /**
+   * ViewCountOutputType without action
+   */
   export type ViewCountOutputTypeCountSortsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ViewSortWhereInput
+  }
+
+
+  /**
+   * Count Type ViewFilterGroupCountOutputType
+   */
+
+  export type ViewFilterGroupCountOutputType = {
+    filters: number
+  }
+
+  export type ViewFilterGroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    filters?: boolean | ViewFilterGroupCountOutputTypeCountFiltersArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ViewFilterGroupCountOutputType without action
+   */
+  export type ViewFilterGroupCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroupCountOutputType
+     */
+    select?: ViewFilterGroupCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ViewFilterGroupCountOutputType without action
+   */
+  export type ViewFilterGroupCountOutputTypeCountFiltersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ViewFilterWhereInput
   }
 
 
@@ -13428,6 +13559,7 @@ export namespace Prisma {
     name: string | null
     position: number | null
     createdAt: Date | null
+    filterConjunction: string | null
   }
 
   export type ViewMaxAggregateOutputType = {
@@ -13436,6 +13568,7 @@ export namespace Prisma {
     name: string | null
     position: number | null
     createdAt: Date | null
+    filterConjunction: string | null
   }
 
   export type ViewCountAggregateOutputType = {
@@ -13444,6 +13577,7 @@ export namespace Prisma {
     name: number
     position: number
     createdAt: number
+    filterConjunction: number
     _all: number
   }
 
@@ -13462,6 +13596,7 @@ export namespace Prisma {
     name?: true
     position?: true
     createdAt?: true
+    filterConjunction?: true
   }
 
   export type ViewMaxAggregateInputType = {
@@ -13470,6 +13605,7 @@ export namespace Prisma {
     name?: true
     position?: true
     createdAt?: true
+    filterConjunction?: true
   }
 
   export type ViewCountAggregateInputType = {
@@ -13478,6 +13614,7 @@ export namespace Prisma {
     name?: true
     position?: true
     createdAt?: true
+    filterConjunction?: true
     _all?: true
   }
 
@@ -13573,6 +13710,7 @@ export namespace Prisma {
     name: string
     position: number | null
     createdAt: Date
+    filterConjunction: string
     _count: ViewCountAggregateOutputType | null
     _avg: ViewAvgAggregateOutputType | null
     _sum: ViewSumAggregateOutputType | null
@@ -13600,8 +13738,10 @@ export namespace Prisma {
     name?: boolean
     position?: boolean
     createdAt?: boolean
+    filterConjunction?: boolean
     table?: boolean | TableDefaultArgs<ExtArgs>
     filters?: boolean | View$filtersArgs<ExtArgs>
+    filterGroups?: boolean | View$filterGroupsArgs<ExtArgs>
     sorts?: boolean | View$sortsArgs<ExtArgs>
     _count?: boolean | ViewCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["view"]>
@@ -13612,6 +13752,7 @@ export namespace Prisma {
     name?: boolean
     position?: boolean
     createdAt?: boolean
+    filterConjunction?: boolean
     table?: boolean | TableDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["view"]>
 
@@ -13621,6 +13762,7 @@ export namespace Prisma {
     name?: boolean
     position?: boolean
     createdAt?: boolean
+    filterConjunction?: boolean
     table?: boolean | TableDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["view"]>
 
@@ -13630,12 +13772,14 @@ export namespace Prisma {
     name?: boolean
     position?: boolean
     createdAt?: boolean
+    filterConjunction?: boolean
   }
 
-  export type ViewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tableId" | "name" | "position" | "createdAt", ExtArgs["result"]["view"]>
+  export type ViewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tableId" | "name" | "position" | "createdAt" | "filterConjunction", ExtArgs["result"]["view"]>
   export type ViewInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     table?: boolean | TableDefaultArgs<ExtArgs>
     filters?: boolean | View$filtersArgs<ExtArgs>
+    filterGroups?: boolean | View$filterGroupsArgs<ExtArgs>
     sorts?: boolean | View$sortsArgs<ExtArgs>
     _count?: boolean | ViewCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -13651,6 +13795,7 @@ export namespace Prisma {
     objects: {
       table: Prisma.$TablePayload<ExtArgs>
       filters: Prisma.$ViewFilterPayload<ExtArgs>[]
+      filterGroups: Prisma.$ViewFilterGroupPayload<ExtArgs>[]
       sorts: Prisma.$ViewSortPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -13659,6 +13804,7 @@ export namespace Prisma {
       name: string
       position: number | null
       createdAt: Date
+      filterConjunction: string
     }, ExtArgs["result"]["view"]>
     composites: {}
   }
@@ -14055,6 +14201,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     table<T extends TableDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TableDefaultArgs<ExtArgs>>): Prisma__TableClient<$Result.GetResult<Prisma.$TablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     filters<T extends View$filtersArgs<ExtArgs> = {}>(args?: Subset<T, View$filtersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViewFilterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    filterGroups<T extends View$filterGroupsArgs<ExtArgs> = {}>(args?: Subset<T, View$filterGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sorts<T extends View$sortsArgs<ExtArgs> = {}>(args?: Subset<T, View$sortsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViewSortPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -14090,6 +14237,7 @@ export namespace Prisma {
     readonly name: FieldRef<"View", 'String'>
     readonly position: FieldRef<"View", 'Int'>
     readonly createdAt: FieldRef<"View", 'DateTime'>
+    readonly filterConjunction: FieldRef<"View", 'String'>
   }
     
 
@@ -14510,6 +14658,30 @@ export namespace Prisma {
   }
 
   /**
+   * View.filterGroups
+   */
+  export type View$filterGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    where?: ViewFilterGroupWhereInput
+    orderBy?: ViewFilterGroupOrderByWithRelationInput | ViewFilterGroupOrderByWithRelationInput[]
+    cursor?: ViewFilterGroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ViewFilterGroupScalarFieldEnum | ViewFilterGroupScalarFieldEnum[]
+  }
+
+  /**
    * View.sorts
    */
   export type View$sortsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14558,54 +14730,84 @@ export namespace Prisma {
 
   export type AggregateViewFilter = {
     _count: ViewFilterCountAggregateOutputType | null
+    _avg: ViewFilterAvgAggregateOutputType | null
+    _sum: ViewFilterSumAggregateOutputType | null
     _min: ViewFilterMinAggregateOutputType | null
     _max: ViewFilterMaxAggregateOutputType | null
+  }
+
+  export type ViewFilterAvgAggregateOutputType = {
+    position: number | null
+  }
+
+  export type ViewFilterSumAggregateOutputType = {
+    position: number | null
   }
 
   export type ViewFilterMinAggregateOutputType = {
     id: string | null
     viewId: string | null
+    groupId: string | null
     fieldId: string | null
     operator: string | null
+    position: number | null
   }
 
   export type ViewFilterMaxAggregateOutputType = {
     id: string | null
     viewId: string | null
+    groupId: string | null
     fieldId: string | null
     operator: string | null
+    position: number | null
   }
 
   export type ViewFilterCountAggregateOutputType = {
     id: number
     viewId: number
+    groupId: number
     fieldId: number
     operator: number
     value: number
+    position: number
     _all: number
   }
 
 
+  export type ViewFilterAvgAggregateInputType = {
+    position?: true
+  }
+
+  export type ViewFilterSumAggregateInputType = {
+    position?: true
+  }
+
   export type ViewFilterMinAggregateInputType = {
     id?: true
     viewId?: true
+    groupId?: true
     fieldId?: true
     operator?: true
+    position?: true
   }
 
   export type ViewFilterMaxAggregateInputType = {
     id?: true
     viewId?: true
+    groupId?: true
     fieldId?: true
     operator?: true
+    position?: true
   }
 
   export type ViewFilterCountAggregateInputType = {
     id?: true
     viewId?: true
+    groupId?: true
     fieldId?: true
     operator?: true
     value?: true
+    position?: true
     _all?: true
   }
 
@@ -14647,6 +14849,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ViewFilterAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ViewFilterSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ViewFilterMinAggregateInputType
@@ -14677,6 +14891,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ViewFilterCountAggregateInputType | true
+    _avg?: ViewFilterAvgAggregateInputType
+    _sum?: ViewFilterSumAggregateInputType
     _min?: ViewFilterMinAggregateInputType
     _max?: ViewFilterMaxAggregateInputType
   }
@@ -14684,10 +14900,14 @@ export namespace Prisma {
   export type ViewFilterGroupByOutputType = {
     id: string
     viewId: string
+    groupId: string | null
     fieldId: string | null
     operator: string
     value: JsonValue | null
+    position: number | null
     _count: ViewFilterCountAggregateOutputType | null
+    _avg: ViewFilterAvgAggregateOutputType | null
+    _sum: ViewFilterSumAggregateOutputType | null
     _min: ViewFilterMinAggregateOutputType | null
     _max: ViewFilterMaxAggregateOutputType | null
   }
@@ -14709,52 +14929,66 @@ export namespace Prisma {
   export type ViewFilterSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     viewId?: boolean
+    groupId?: boolean
     fieldId?: boolean
     operator?: boolean
     value?: boolean
+    position?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
+    group?: boolean | ViewFilter$groupArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
   }, ExtArgs["result"]["viewFilter"]>
 
   export type ViewFilterSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     viewId?: boolean
+    groupId?: boolean
     fieldId?: boolean
     operator?: boolean
     value?: boolean
+    position?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
+    group?: boolean | ViewFilter$groupArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
   }, ExtArgs["result"]["viewFilter"]>
 
   export type ViewFilterSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     viewId?: boolean
+    groupId?: boolean
     fieldId?: boolean
     operator?: boolean
     value?: boolean
+    position?: boolean
     view?: boolean | ViewDefaultArgs<ExtArgs>
+    group?: boolean | ViewFilter$groupArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
   }, ExtArgs["result"]["viewFilter"]>
 
   export type ViewFilterSelectScalar = {
     id?: boolean
     viewId?: boolean
+    groupId?: boolean
     fieldId?: boolean
     operator?: boolean
     value?: boolean
+    position?: boolean
   }
 
-  export type ViewFilterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "viewId" | "fieldId" | "operator" | "value", ExtArgs["result"]["viewFilter"]>
+  export type ViewFilterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "viewId" | "groupId" | "fieldId" | "operator" | "value" | "position", ExtArgs["result"]["viewFilter"]>
   export type ViewFilterInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     view?: boolean | ViewDefaultArgs<ExtArgs>
+    group?: boolean | ViewFilter$groupArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
   }
   export type ViewFilterIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     view?: boolean | ViewDefaultArgs<ExtArgs>
+    group?: boolean | ViewFilter$groupArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
   }
   export type ViewFilterIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     view?: boolean | ViewDefaultArgs<ExtArgs>
+    group?: boolean | ViewFilter$groupArgs<ExtArgs>
     field?: boolean | ViewFilter$fieldArgs<ExtArgs>
   }
 
@@ -14762,14 +14996,17 @@ export namespace Prisma {
     name: "ViewFilter"
     objects: {
       view: Prisma.$ViewPayload<ExtArgs>
+      group: Prisma.$ViewFilterGroupPayload<ExtArgs> | null
       field: Prisma.$FieldPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       viewId: string
+      groupId: string | null
       fieldId: string | null
       operator: string
       value: Prisma.JsonValue | null
+      position: number | null
     }, ExtArgs["result"]["viewFilter"]>
     composites: {}
   }
@@ -15165,6 +15402,7 @@ export namespace Prisma {
   export interface Prisma__ViewFilterClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     view<T extends ViewDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ViewDefaultArgs<ExtArgs>>): Prisma__ViewClient<$Result.GetResult<Prisma.$ViewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    group<T extends ViewFilter$groupArgs<ExtArgs> = {}>(args?: Subset<T, ViewFilter$groupArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     field<T extends ViewFilter$fieldArgs<ExtArgs> = {}>(args?: Subset<T, ViewFilter$fieldArgs<ExtArgs>>): Prisma__FieldClient<$Result.GetResult<Prisma.$FieldPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -15197,9 +15435,11 @@ export namespace Prisma {
   interface ViewFilterFieldRefs {
     readonly id: FieldRef<"ViewFilter", 'String'>
     readonly viewId: FieldRef<"ViewFilter", 'String'>
+    readonly groupId: FieldRef<"ViewFilter", 'String'>
     readonly fieldId: FieldRef<"ViewFilter", 'String'>
     readonly operator: FieldRef<"ViewFilter", 'String'>
     readonly value: FieldRef<"ViewFilter", 'Json'>
+    readonly position: FieldRef<"ViewFilter", 'Int'>
   }
     
 
@@ -15596,6 +15836,25 @@ export namespace Prisma {
   }
 
   /**
+   * ViewFilter.group
+   */
+  export type ViewFilter$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    where?: ViewFilterGroupWhereInput
+  }
+
+  /**
    * ViewFilter.field
    */
   export type ViewFilter$fieldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -15630,6 +15889,1128 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ViewFilterInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ViewFilterGroup
+   */
+
+  export type AggregateViewFilterGroup = {
+    _count: ViewFilterGroupCountAggregateOutputType | null
+    _avg: ViewFilterGroupAvgAggregateOutputType | null
+    _sum: ViewFilterGroupSumAggregateOutputType | null
+    _min: ViewFilterGroupMinAggregateOutputType | null
+    _max: ViewFilterGroupMaxAggregateOutputType | null
+  }
+
+  export type ViewFilterGroupAvgAggregateOutputType = {
+    position: number | null
+  }
+
+  export type ViewFilterGroupSumAggregateOutputType = {
+    position: number | null
+  }
+
+  export type ViewFilterGroupMinAggregateOutputType = {
+    id: string | null
+    viewId: string | null
+    conjunction: string | null
+    connector: string | null
+    position: number | null
+  }
+
+  export type ViewFilterGroupMaxAggregateOutputType = {
+    id: string | null
+    viewId: string | null
+    conjunction: string | null
+    connector: string | null
+    position: number | null
+  }
+
+  export type ViewFilterGroupCountAggregateOutputType = {
+    id: number
+    viewId: number
+    conjunction: number
+    connector: number
+    position: number
+    _all: number
+  }
+
+
+  export type ViewFilterGroupAvgAggregateInputType = {
+    position?: true
+  }
+
+  export type ViewFilterGroupSumAggregateInputType = {
+    position?: true
+  }
+
+  export type ViewFilterGroupMinAggregateInputType = {
+    id?: true
+    viewId?: true
+    conjunction?: true
+    connector?: true
+    position?: true
+  }
+
+  export type ViewFilterGroupMaxAggregateInputType = {
+    id?: true
+    viewId?: true
+    conjunction?: true
+    connector?: true
+    position?: true
+  }
+
+  export type ViewFilterGroupCountAggregateInputType = {
+    id?: true
+    viewId?: true
+    conjunction?: true
+    connector?: true
+    position?: true
+    _all?: true
+  }
+
+  export type ViewFilterGroupAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ViewFilterGroup to aggregate.
+     */
+    where?: ViewFilterGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ViewFilterGroups to fetch.
+     */
+    orderBy?: ViewFilterGroupOrderByWithRelationInput | ViewFilterGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ViewFilterGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ViewFilterGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ViewFilterGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ViewFilterGroups
+    **/
+    _count?: true | ViewFilterGroupCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ViewFilterGroupAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ViewFilterGroupSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ViewFilterGroupMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ViewFilterGroupMaxAggregateInputType
+  }
+
+  export type GetViewFilterGroupAggregateType<T extends ViewFilterGroupAggregateArgs> = {
+        [P in keyof T & keyof AggregateViewFilterGroup]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateViewFilterGroup[P]>
+      : GetScalarType<T[P], AggregateViewFilterGroup[P]>
+  }
+
+
+
+
+  export type ViewFilterGroupGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ViewFilterGroupWhereInput
+    orderBy?: ViewFilterGroupOrderByWithAggregationInput | ViewFilterGroupOrderByWithAggregationInput[]
+    by: ViewFilterGroupScalarFieldEnum[] | ViewFilterGroupScalarFieldEnum
+    having?: ViewFilterGroupScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ViewFilterGroupCountAggregateInputType | true
+    _avg?: ViewFilterGroupAvgAggregateInputType
+    _sum?: ViewFilterGroupSumAggregateInputType
+    _min?: ViewFilterGroupMinAggregateInputType
+    _max?: ViewFilterGroupMaxAggregateInputType
+  }
+
+  export type ViewFilterGroupGroupByOutputType = {
+    id: string
+    viewId: string
+    conjunction: string
+    connector: string
+    position: number
+    _count: ViewFilterGroupCountAggregateOutputType | null
+    _avg: ViewFilterGroupAvgAggregateOutputType | null
+    _sum: ViewFilterGroupSumAggregateOutputType | null
+    _min: ViewFilterGroupMinAggregateOutputType | null
+    _max: ViewFilterGroupMaxAggregateOutputType | null
+  }
+
+  type GetViewFilterGroupGroupByPayload<T extends ViewFilterGroupGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ViewFilterGroupGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ViewFilterGroupGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ViewFilterGroupGroupByOutputType[P]>
+            : GetScalarType<T[P], ViewFilterGroupGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ViewFilterGroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    viewId?: boolean
+    conjunction?: boolean
+    connector?: boolean
+    position?: boolean
+    view?: boolean | ViewDefaultArgs<ExtArgs>
+    filters?: boolean | ViewFilterGroup$filtersArgs<ExtArgs>
+    _count?: boolean | ViewFilterGroupCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["viewFilterGroup"]>
+
+  export type ViewFilterGroupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    viewId?: boolean
+    conjunction?: boolean
+    connector?: boolean
+    position?: boolean
+    view?: boolean | ViewDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["viewFilterGroup"]>
+
+  export type ViewFilterGroupSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    viewId?: boolean
+    conjunction?: boolean
+    connector?: boolean
+    position?: boolean
+    view?: boolean | ViewDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["viewFilterGroup"]>
+
+  export type ViewFilterGroupSelectScalar = {
+    id?: boolean
+    viewId?: boolean
+    conjunction?: boolean
+    connector?: boolean
+    position?: boolean
+  }
+
+  export type ViewFilterGroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "viewId" | "conjunction" | "connector" | "position", ExtArgs["result"]["viewFilterGroup"]>
+  export type ViewFilterGroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    view?: boolean | ViewDefaultArgs<ExtArgs>
+    filters?: boolean | ViewFilterGroup$filtersArgs<ExtArgs>
+    _count?: boolean | ViewFilterGroupCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ViewFilterGroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    view?: boolean | ViewDefaultArgs<ExtArgs>
+  }
+  export type ViewFilterGroupIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    view?: boolean | ViewDefaultArgs<ExtArgs>
+  }
+
+  export type $ViewFilterGroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ViewFilterGroup"
+    objects: {
+      view: Prisma.$ViewPayload<ExtArgs>
+      filters: Prisma.$ViewFilterPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      viewId: string
+      conjunction: string
+      connector: string
+      position: number
+    }, ExtArgs["result"]["viewFilterGroup"]>
+    composites: {}
+  }
+
+  type ViewFilterGroupGetPayload<S extends boolean | null | undefined | ViewFilterGroupDefaultArgs> = $Result.GetResult<Prisma.$ViewFilterGroupPayload, S>
+
+  type ViewFilterGroupCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ViewFilterGroupFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ViewFilterGroupCountAggregateInputType | true
+    }
+
+  export interface ViewFilterGroupDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ViewFilterGroup'], meta: { name: 'ViewFilterGroup' } }
+    /**
+     * Find zero or one ViewFilterGroup that matches the filter.
+     * @param {ViewFilterGroupFindUniqueArgs} args - Arguments to find a ViewFilterGroup
+     * @example
+     * // Get one ViewFilterGroup
+     * const viewFilterGroup = await prisma.viewFilterGroup.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ViewFilterGroupFindUniqueArgs>(args: SelectSubset<T, ViewFilterGroupFindUniqueArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ViewFilterGroup that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ViewFilterGroupFindUniqueOrThrowArgs} args - Arguments to find a ViewFilterGroup
+     * @example
+     * // Get one ViewFilterGroup
+     * const viewFilterGroup = await prisma.viewFilterGroup.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ViewFilterGroupFindUniqueOrThrowArgs>(args: SelectSubset<T, ViewFilterGroupFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ViewFilterGroup that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ViewFilterGroupFindFirstArgs} args - Arguments to find a ViewFilterGroup
+     * @example
+     * // Get one ViewFilterGroup
+     * const viewFilterGroup = await prisma.viewFilterGroup.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ViewFilterGroupFindFirstArgs>(args?: SelectSubset<T, ViewFilterGroupFindFirstArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ViewFilterGroup that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ViewFilterGroupFindFirstOrThrowArgs} args - Arguments to find a ViewFilterGroup
+     * @example
+     * // Get one ViewFilterGroup
+     * const viewFilterGroup = await prisma.viewFilterGroup.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ViewFilterGroupFindFirstOrThrowArgs>(args?: SelectSubset<T, ViewFilterGroupFindFirstOrThrowArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ViewFilterGroups that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ViewFilterGroupFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ViewFilterGroups
+     * const viewFilterGroups = await prisma.viewFilterGroup.findMany()
+     * 
+     * // Get first 10 ViewFilterGroups
+     * const viewFilterGroups = await prisma.viewFilterGroup.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const viewFilterGroupWithIdOnly = await prisma.viewFilterGroup.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ViewFilterGroupFindManyArgs>(args?: SelectSubset<T, ViewFilterGroupFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ViewFilterGroup.
+     * @param {ViewFilterGroupCreateArgs} args - Arguments to create a ViewFilterGroup.
+     * @example
+     * // Create one ViewFilterGroup
+     * const ViewFilterGroup = await prisma.viewFilterGroup.create({
+     *   data: {
+     *     // ... data to create a ViewFilterGroup
+     *   }
+     * })
+     * 
+     */
+    create<T extends ViewFilterGroupCreateArgs>(args: SelectSubset<T, ViewFilterGroupCreateArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ViewFilterGroups.
+     * @param {ViewFilterGroupCreateManyArgs} args - Arguments to create many ViewFilterGroups.
+     * @example
+     * // Create many ViewFilterGroups
+     * const viewFilterGroup = await prisma.viewFilterGroup.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ViewFilterGroupCreateManyArgs>(args?: SelectSubset<T, ViewFilterGroupCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ViewFilterGroups and returns the data saved in the database.
+     * @param {ViewFilterGroupCreateManyAndReturnArgs} args - Arguments to create many ViewFilterGroups.
+     * @example
+     * // Create many ViewFilterGroups
+     * const viewFilterGroup = await prisma.viewFilterGroup.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ViewFilterGroups and only return the `id`
+     * const viewFilterGroupWithIdOnly = await prisma.viewFilterGroup.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ViewFilterGroupCreateManyAndReturnArgs>(args?: SelectSubset<T, ViewFilterGroupCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ViewFilterGroup.
+     * @param {ViewFilterGroupDeleteArgs} args - Arguments to delete one ViewFilterGroup.
+     * @example
+     * // Delete one ViewFilterGroup
+     * const ViewFilterGroup = await prisma.viewFilterGroup.delete({
+     *   where: {
+     *     // ... filter to delete one ViewFilterGroup
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ViewFilterGroupDeleteArgs>(args: SelectSubset<T, ViewFilterGroupDeleteArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ViewFilterGroup.
+     * @param {ViewFilterGroupUpdateArgs} args - Arguments to update one ViewFilterGroup.
+     * @example
+     * // Update one ViewFilterGroup
+     * const viewFilterGroup = await prisma.viewFilterGroup.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ViewFilterGroupUpdateArgs>(args: SelectSubset<T, ViewFilterGroupUpdateArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ViewFilterGroups.
+     * @param {ViewFilterGroupDeleteManyArgs} args - Arguments to filter ViewFilterGroups to delete.
+     * @example
+     * // Delete a few ViewFilterGroups
+     * const { count } = await prisma.viewFilterGroup.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ViewFilterGroupDeleteManyArgs>(args?: SelectSubset<T, ViewFilterGroupDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ViewFilterGroups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ViewFilterGroupUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ViewFilterGroups
+     * const viewFilterGroup = await prisma.viewFilterGroup.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ViewFilterGroupUpdateManyArgs>(args: SelectSubset<T, ViewFilterGroupUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ViewFilterGroups and returns the data updated in the database.
+     * @param {ViewFilterGroupUpdateManyAndReturnArgs} args - Arguments to update many ViewFilterGroups.
+     * @example
+     * // Update many ViewFilterGroups
+     * const viewFilterGroup = await prisma.viewFilterGroup.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ViewFilterGroups and only return the `id`
+     * const viewFilterGroupWithIdOnly = await prisma.viewFilterGroup.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ViewFilterGroupUpdateManyAndReturnArgs>(args: SelectSubset<T, ViewFilterGroupUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ViewFilterGroup.
+     * @param {ViewFilterGroupUpsertArgs} args - Arguments to update or create a ViewFilterGroup.
+     * @example
+     * // Update or create a ViewFilterGroup
+     * const viewFilterGroup = await prisma.viewFilterGroup.upsert({
+     *   create: {
+     *     // ... data to create a ViewFilterGroup
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ViewFilterGroup we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ViewFilterGroupUpsertArgs>(args: SelectSubset<T, ViewFilterGroupUpsertArgs<ExtArgs>>): Prisma__ViewFilterGroupClient<$Result.GetResult<Prisma.$ViewFilterGroupPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ViewFilterGroups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ViewFilterGroupCountArgs} args - Arguments to filter ViewFilterGroups to count.
+     * @example
+     * // Count the number of ViewFilterGroups
+     * const count = await prisma.viewFilterGroup.count({
+     *   where: {
+     *     // ... the filter for the ViewFilterGroups we want to count
+     *   }
+     * })
+    **/
+    count<T extends ViewFilterGroupCountArgs>(
+      args?: Subset<T, ViewFilterGroupCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ViewFilterGroupCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ViewFilterGroup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ViewFilterGroupAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ViewFilterGroupAggregateArgs>(args: Subset<T, ViewFilterGroupAggregateArgs>): Prisma.PrismaPromise<GetViewFilterGroupAggregateType<T>>
+
+    /**
+     * Group by ViewFilterGroup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ViewFilterGroupGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ViewFilterGroupGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ViewFilterGroupGroupByArgs['orderBy'] }
+        : { orderBy?: ViewFilterGroupGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ViewFilterGroupGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetViewFilterGroupGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ViewFilterGroup model
+   */
+  readonly fields: ViewFilterGroupFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ViewFilterGroup.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ViewFilterGroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    view<T extends ViewDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ViewDefaultArgs<ExtArgs>>): Prisma__ViewClient<$Result.GetResult<Prisma.$ViewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    filters<T extends ViewFilterGroup$filtersArgs<ExtArgs> = {}>(args?: Subset<T, ViewFilterGroup$filtersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ViewFilterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ViewFilterGroup model
+   */
+  interface ViewFilterGroupFieldRefs {
+    readonly id: FieldRef<"ViewFilterGroup", 'String'>
+    readonly viewId: FieldRef<"ViewFilterGroup", 'String'>
+    readonly conjunction: FieldRef<"ViewFilterGroup", 'String'>
+    readonly connector: FieldRef<"ViewFilterGroup", 'String'>
+    readonly position: FieldRef<"ViewFilterGroup", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ViewFilterGroup findUnique
+   */
+  export type ViewFilterGroupFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which ViewFilterGroup to fetch.
+     */
+    where: ViewFilterGroupWhereUniqueInput
+  }
+
+  /**
+   * ViewFilterGroup findUniqueOrThrow
+   */
+  export type ViewFilterGroupFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which ViewFilterGroup to fetch.
+     */
+    where: ViewFilterGroupWhereUniqueInput
+  }
+
+  /**
+   * ViewFilterGroup findFirst
+   */
+  export type ViewFilterGroupFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which ViewFilterGroup to fetch.
+     */
+    where?: ViewFilterGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ViewFilterGroups to fetch.
+     */
+    orderBy?: ViewFilterGroupOrderByWithRelationInput | ViewFilterGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ViewFilterGroups.
+     */
+    cursor?: ViewFilterGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ViewFilterGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ViewFilterGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ViewFilterGroups.
+     */
+    distinct?: ViewFilterGroupScalarFieldEnum | ViewFilterGroupScalarFieldEnum[]
+  }
+
+  /**
+   * ViewFilterGroup findFirstOrThrow
+   */
+  export type ViewFilterGroupFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which ViewFilterGroup to fetch.
+     */
+    where?: ViewFilterGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ViewFilterGroups to fetch.
+     */
+    orderBy?: ViewFilterGroupOrderByWithRelationInput | ViewFilterGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ViewFilterGroups.
+     */
+    cursor?: ViewFilterGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ViewFilterGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ViewFilterGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ViewFilterGroups.
+     */
+    distinct?: ViewFilterGroupScalarFieldEnum | ViewFilterGroupScalarFieldEnum[]
+  }
+
+  /**
+   * ViewFilterGroup findMany
+   */
+  export type ViewFilterGroupFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which ViewFilterGroups to fetch.
+     */
+    where?: ViewFilterGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ViewFilterGroups to fetch.
+     */
+    orderBy?: ViewFilterGroupOrderByWithRelationInput | ViewFilterGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ViewFilterGroups.
+     */
+    cursor?: ViewFilterGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ViewFilterGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ViewFilterGroups.
+     */
+    skip?: number
+    distinct?: ViewFilterGroupScalarFieldEnum | ViewFilterGroupScalarFieldEnum[]
+  }
+
+  /**
+   * ViewFilterGroup create
+   */
+  export type ViewFilterGroupCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ViewFilterGroup.
+     */
+    data: XOR<ViewFilterGroupCreateInput, ViewFilterGroupUncheckedCreateInput>
+  }
+
+  /**
+   * ViewFilterGroup createMany
+   */
+  export type ViewFilterGroupCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ViewFilterGroups.
+     */
+    data: ViewFilterGroupCreateManyInput | ViewFilterGroupCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ViewFilterGroup createManyAndReturn
+   */
+  export type ViewFilterGroupCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * The data used to create many ViewFilterGroups.
+     */
+    data: ViewFilterGroupCreateManyInput | ViewFilterGroupCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ViewFilterGroup update
+   */
+  export type ViewFilterGroupUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ViewFilterGroup.
+     */
+    data: XOR<ViewFilterGroupUpdateInput, ViewFilterGroupUncheckedUpdateInput>
+    /**
+     * Choose, which ViewFilterGroup to update.
+     */
+    where: ViewFilterGroupWhereUniqueInput
+  }
+
+  /**
+   * ViewFilterGroup updateMany
+   */
+  export type ViewFilterGroupUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ViewFilterGroups.
+     */
+    data: XOR<ViewFilterGroupUpdateManyMutationInput, ViewFilterGroupUncheckedUpdateManyInput>
+    /**
+     * Filter which ViewFilterGroups to update
+     */
+    where?: ViewFilterGroupWhereInput
+    /**
+     * Limit how many ViewFilterGroups to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ViewFilterGroup updateManyAndReturn
+   */
+  export type ViewFilterGroupUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * The data used to update ViewFilterGroups.
+     */
+    data: XOR<ViewFilterGroupUpdateManyMutationInput, ViewFilterGroupUncheckedUpdateManyInput>
+    /**
+     * Filter which ViewFilterGroups to update
+     */
+    where?: ViewFilterGroupWhereInput
+    /**
+     * Limit how many ViewFilterGroups to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ViewFilterGroup upsert
+   */
+  export type ViewFilterGroupUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ViewFilterGroup to update in case it exists.
+     */
+    where: ViewFilterGroupWhereUniqueInput
+    /**
+     * In case the ViewFilterGroup found by the `where` argument doesn't exist, create a new ViewFilterGroup with this data.
+     */
+    create: XOR<ViewFilterGroupCreateInput, ViewFilterGroupUncheckedCreateInput>
+    /**
+     * In case the ViewFilterGroup was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ViewFilterGroupUpdateInput, ViewFilterGroupUncheckedUpdateInput>
+  }
+
+  /**
+   * ViewFilterGroup delete
+   */
+  export type ViewFilterGroupDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
+    /**
+     * Filter which ViewFilterGroup to delete.
+     */
+    where: ViewFilterGroupWhereUniqueInput
+  }
+
+  /**
+   * ViewFilterGroup deleteMany
+   */
+  export type ViewFilterGroupDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ViewFilterGroups to delete
+     */
+    where?: ViewFilterGroupWhereInput
+    /**
+     * Limit how many ViewFilterGroups to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ViewFilterGroup.filters
+   */
+  export type ViewFilterGroup$filtersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilter
+     */
+    select?: ViewFilterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilter
+     */
+    omit?: ViewFilterOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterInclude<ExtArgs> | null
+    where?: ViewFilterWhereInput
+    orderBy?: ViewFilterOrderByWithRelationInput | ViewFilterOrderByWithRelationInput[]
+    cursor?: ViewFilterWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ViewFilterScalarFieldEnum | ViewFilterScalarFieldEnum[]
+  }
+
+  /**
+   * ViewFilterGroup without action
+   */
+  export type ViewFilterGroupDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ViewFilterGroup
+     */
+    select?: ViewFilterGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ViewFilterGroup
+     */
+    omit?: ViewFilterGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ViewFilterGroupInclude<ExtArgs> | null
   }
 
 
@@ -16866,7 +18247,8 @@ export namespace Prisma {
     tableId: 'tableId',
     name: 'name',
     position: 'position',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    filterConjunction: 'filterConjunction'
   };
 
   export type ViewScalarFieldEnum = (typeof ViewScalarFieldEnum)[keyof typeof ViewScalarFieldEnum]
@@ -16875,12 +18257,25 @@ export namespace Prisma {
   export const ViewFilterScalarFieldEnum: {
     id: 'id',
     viewId: 'viewId',
+    groupId: 'groupId',
     fieldId: 'fieldId',
     operator: 'operator',
-    value: 'value'
+    value: 'value',
+    position: 'position'
   };
 
   export type ViewFilterScalarFieldEnum = (typeof ViewFilterScalarFieldEnum)[keyof typeof ViewFilterScalarFieldEnum]
+
+
+  export const ViewFilterGroupScalarFieldEnum: {
+    id: 'id',
+    viewId: 'viewId',
+    conjunction: 'conjunction',
+    connector: 'connector',
+    position: 'position'
+  };
+
+  export type ViewFilterGroupScalarFieldEnum = (typeof ViewFilterGroupScalarFieldEnum)[keyof typeof ViewFilterGroupScalarFieldEnum]
 
 
   export const ViewSortScalarFieldEnum: {
@@ -17678,8 +19073,10 @@ export namespace Prisma {
     name?: StringFilter<"View"> | string
     position?: IntNullableFilter<"View"> | number | null
     createdAt?: DateTimeFilter<"View"> | Date | string
+    filterConjunction?: StringFilter<"View"> | string
     table?: XOR<TableScalarRelationFilter, TableWhereInput>
     filters?: ViewFilterListRelationFilter
+    filterGroups?: ViewFilterGroupListRelationFilter
     sorts?: ViewSortListRelationFilter
   }
 
@@ -17689,8 +19086,10 @@ export namespace Prisma {
     name?: SortOrder
     position?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    filterConjunction?: SortOrder
     table?: TableOrderByWithRelationInput
     filters?: ViewFilterOrderByRelationAggregateInput
+    filterGroups?: ViewFilterGroupOrderByRelationAggregateInput
     sorts?: ViewSortOrderByRelationAggregateInput
   }
 
@@ -17703,8 +19102,10 @@ export namespace Prisma {
     name?: StringFilter<"View"> | string
     position?: IntNullableFilter<"View"> | number | null
     createdAt?: DateTimeFilter<"View"> | Date | string
+    filterConjunction?: StringFilter<"View"> | string
     table?: XOR<TableScalarRelationFilter, TableWhereInput>
     filters?: ViewFilterListRelationFilter
+    filterGroups?: ViewFilterGroupListRelationFilter
     sorts?: ViewSortListRelationFilter
   }, "id">
 
@@ -17714,6 +19115,7 @@ export namespace Prisma {
     name?: SortOrder
     position?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    filterConjunction?: SortOrder
     _count?: ViewCountOrderByAggregateInput
     _avg?: ViewAvgOrderByAggregateInput
     _max?: ViewMaxOrderByAggregateInput
@@ -17730,6 +19132,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"View"> | string
     position?: IntNullableWithAggregatesFilter<"View"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"View"> | Date | string
+    filterConjunction?: StringWithAggregatesFilter<"View"> | string
   }
 
   export type ViewFilterWhereInput = {
@@ -17738,20 +19141,26 @@ export namespace Prisma {
     NOT?: ViewFilterWhereInput | ViewFilterWhereInput[]
     id?: StringFilter<"ViewFilter"> | string
     viewId?: StringFilter<"ViewFilter"> | string
+    groupId?: StringNullableFilter<"ViewFilter"> | string | null
     fieldId?: StringNullableFilter<"ViewFilter"> | string | null
     operator?: StringFilter<"ViewFilter"> | string
     value?: JsonNullableFilter<"ViewFilter">
+    position?: IntNullableFilter<"ViewFilter"> | number | null
     view?: XOR<ViewScalarRelationFilter, ViewWhereInput>
+    group?: XOR<ViewFilterGroupNullableScalarRelationFilter, ViewFilterGroupWhereInput> | null
     field?: XOR<FieldNullableScalarRelationFilter, FieldWhereInput> | null
   }
 
   export type ViewFilterOrderByWithRelationInput = {
     id?: SortOrder
     viewId?: SortOrder
+    groupId?: SortOrderInput | SortOrder
     fieldId?: SortOrderInput | SortOrder
     operator?: SortOrder
     value?: SortOrderInput | SortOrder
+    position?: SortOrderInput | SortOrder
     view?: ViewOrderByWithRelationInput
+    group?: ViewFilterGroupOrderByWithRelationInput
     field?: FieldOrderByWithRelationInput
   }
 
@@ -17761,22 +19170,29 @@ export namespace Prisma {
     OR?: ViewFilterWhereInput[]
     NOT?: ViewFilterWhereInput | ViewFilterWhereInput[]
     viewId?: StringFilter<"ViewFilter"> | string
+    groupId?: StringNullableFilter<"ViewFilter"> | string | null
     fieldId?: StringNullableFilter<"ViewFilter"> | string | null
     operator?: StringFilter<"ViewFilter"> | string
     value?: JsonNullableFilter<"ViewFilter">
+    position?: IntNullableFilter<"ViewFilter"> | number | null
     view?: XOR<ViewScalarRelationFilter, ViewWhereInput>
+    group?: XOR<ViewFilterGroupNullableScalarRelationFilter, ViewFilterGroupWhereInput> | null
     field?: XOR<FieldNullableScalarRelationFilter, FieldWhereInput> | null
   }, "id">
 
   export type ViewFilterOrderByWithAggregationInput = {
     id?: SortOrder
     viewId?: SortOrder
+    groupId?: SortOrderInput | SortOrder
     fieldId?: SortOrderInput | SortOrder
     operator?: SortOrder
     value?: SortOrderInput | SortOrder
+    position?: SortOrderInput | SortOrder
     _count?: ViewFilterCountOrderByAggregateInput
+    _avg?: ViewFilterAvgOrderByAggregateInput
     _max?: ViewFilterMaxOrderByAggregateInput
     _min?: ViewFilterMinOrderByAggregateInput
+    _sum?: ViewFilterSumOrderByAggregateInput
   }
 
   export type ViewFilterScalarWhereWithAggregatesInput = {
@@ -17785,9 +19201,71 @@ export namespace Prisma {
     NOT?: ViewFilterScalarWhereWithAggregatesInput | ViewFilterScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ViewFilter"> | string
     viewId?: StringWithAggregatesFilter<"ViewFilter"> | string
+    groupId?: StringNullableWithAggregatesFilter<"ViewFilter"> | string | null
     fieldId?: StringNullableWithAggregatesFilter<"ViewFilter"> | string | null
     operator?: StringWithAggregatesFilter<"ViewFilter"> | string
     value?: JsonNullableWithAggregatesFilter<"ViewFilter">
+    position?: IntNullableWithAggregatesFilter<"ViewFilter"> | number | null
+  }
+
+  export type ViewFilterGroupWhereInput = {
+    AND?: ViewFilterGroupWhereInput | ViewFilterGroupWhereInput[]
+    OR?: ViewFilterGroupWhereInput[]
+    NOT?: ViewFilterGroupWhereInput | ViewFilterGroupWhereInput[]
+    id?: StringFilter<"ViewFilterGroup"> | string
+    viewId?: StringFilter<"ViewFilterGroup"> | string
+    conjunction?: StringFilter<"ViewFilterGroup"> | string
+    connector?: StringFilter<"ViewFilterGroup"> | string
+    position?: IntFilter<"ViewFilterGroup"> | number
+    view?: XOR<ViewScalarRelationFilter, ViewWhereInput>
+    filters?: ViewFilterListRelationFilter
+  }
+
+  export type ViewFilterGroupOrderByWithRelationInput = {
+    id?: SortOrder
+    viewId?: SortOrder
+    conjunction?: SortOrder
+    connector?: SortOrder
+    position?: SortOrder
+    view?: ViewOrderByWithRelationInput
+    filters?: ViewFilterOrderByRelationAggregateInput
+  }
+
+  export type ViewFilterGroupWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ViewFilterGroupWhereInput | ViewFilterGroupWhereInput[]
+    OR?: ViewFilterGroupWhereInput[]
+    NOT?: ViewFilterGroupWhereInput | ViewFilterGroupWhereInput[]
+    viewId?: StringFilter<"ViewFilterGroup"> | string
+    conjunction?: StringFilter<"ViewFilterGroup"> | string
+    connector?: StringFilter<"ViewFilterGroup"> | string
+    position?: IntFilter<"ViewFilterGroup"> | number
+    view?: XOR<ViewScalarRelationFilter, ViewWhereInput>
+    filters?: ViewFilterListRelationFilter
+  }, "id">
+
+  export type ViewFilterGroupOrderByWithAggregationInput = {
+    id?: SortOrder
+    viewId?: SortOrder
+    conjunction?: SortOrder
+    connector?: SortOrder
+    position?: SortOrder
+    _count?: ViewFilterGroupCountOrderByAggregateInput
+    _avg?: ViewFilterGroupAvgOrderByAggregateInput
+    _max?: ViewFilterGroupMaxOrderByAggregateInput
+    _min?: ViewFilterGroupMinOrderByAggregateInput
+    _sum?: ViewFilterGroupSumOrderByAggregateInput
+  }
+
+  export type ViewFilterGroupScalarWhereWithAggregatesInput = {
+    AND?: ViewFilterGroupScalarWhereWithAggregatesInput | ViewFilterGroupScalarWhereWithAggregatesInput[]
+    OR?: ViewFilterGroupScalarWhereWithAggregatesInput[]
+    NOT?: ViewFilterGroupScalarWhereWithAggregatesInput | ViewFilterGroupScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ViewFilterGroup"> | string
+    viewId?: StringWithAggregatesFilter<"ViewFilterGroup"> | string
+    conjunction?: StringWithAggregatesFilter<"ViewFilterGroup"> | string
+    connector?: StringWithAggregatesFilter<"ViewFilterGroup"> | string
+    position?: IntWithAggregatesFilter<"ViewFilterGroup"> | number
   }
 
   export type ViewSortWhereInput = {
@@ -18489,8 +19967,10 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
     table: TableCreateNestedOneWithoutViewsInput
     filters?: ViewFilterCreateNestedManyWithoutViewInput
+    filterGroups?: ViewFilterGroupCreateNestedManyWithoutViewInput
     sorts?: ViewSortCreateNestedManyWithoutViewInput
   }
 
@@ -18500,7 +19980,9 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
     filters?: ViewFilterUncheckedCreateNestedManyWithoutViewInput
+    filterGroups?: ViewFilterGroupUncheckedCreateNestedManyWithoutViewInput
     sorts?: ViewSortUncheckedCreateNestedManyWithoutViewInput
   }
 
@@ -18509,8 +19991,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
     table?: TableUpdateOneRequiredWithoutViewsNestedInput
     filters?: ViewFilterUpdateManyWithoutViewNestedInput
+    filterGroups?: ViewFilterGroupUpdateManyWithoutViewNestedInput
     sorts?: ViewSortUpdateManyWithoutViewNestedInput
   }
 
@@ -18520,7 +20004,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
     filters?: ViewFilterUncheckedUpdateManyWithoutViewNestedInput
+    filterGroups?: ViewFilterGroupUncheckedUpdateManyWithoutViewNestedInput
     sorts?: ViewSortUncheckedUpdateManyWithoutViewNestedInput
   }
 
@@ -18530,6 +20016,7 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
   }
 
   export type ViewUpdateManyMutationInput = {
@@ -18537,6 +20024,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
   }
 
   export type ViewUncheckedUpdateManyInput = {
@@ -18545,60 +20033,133 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
   }
 
   export type ViewFilterCreateInput = {
     id?: string
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
     view: ViewCreateNestedOneWithoutFiltersInput
+    group?: ViewFilterGroupCreateNestedOneWithoutFiltersInput
     field?: FieldCreateNestedOneWithoutViewFiltersInput
   }
 
   export type ViewFilterUncheckedCreateInput = {
     id?: string
     viewId: string
+    groupId?: string | null
     fieldId?: string | null
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
   }
 
   export type ViewFilterUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     view?: ViewUpdateOneRequiredWithoutFiltersNestedInput
+    group?: ViewFilterGroupUpdateOneWithoutFiltersNestedInput
     field?: FieldUpdateOneWithoutViewFiltersNestedInput
   }
 
   export type ViewFilterUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
     fieldId?: NullableStringFieldUpdateOperationsInput | string | null
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewFilterCreateManyInput = {
     id?: string
     viewId: string
+    groupId?: string | null
     fieldId?: string | null
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
   }
 
   export type ViewFilterUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewFilterUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
     fieldId?: NullableStringFieldUpdateOperationsInput | string | null
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type ViewFilterGroupCreateInput = {
+    id?: string
+    conjunction?: string
+    connector?: string
+    position?: number
+    view: ViewCreateNestedOneWithoutFilterGroupsInput
+    filters?: ViewFilterCreateNestedManyWithoutGroupInput
+  }
+
+  export type ViewFilterGroupUncheckedCreateInput = {
+    id?: string
+    viewId: string
+    conjunction?: string
+    connector?: string
+    position?: number
+    filters?: ViewFilterUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type ViewFilterGroupUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
+    view?: ViewUpdateOneRequiredWithoutFilterGroupsNestedInput
+    filters?: ViewFilterUpdateManyWithoutGroupNestedInput
+  }
+
+  export type ViewFilterGroupUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    viewId?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
+    filters?: ViewFilterUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type ViewFilterGroupCreateManyInput = {
+    id?: string
+    viewId: string
+    conjunction?: string
+    connector?: string
+    position?: number
+  }
+
+  export type ViewFilterGroupUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type ViewFilterGroupUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    viewId?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
   }
 
   export type ViewSortCreateInput = {
@@ -19288,12 +20849,23 @@ export namespace Prisma {
     valueNumber?: SortOrder
   }
 
+  export type ViewFilterGroupListRelationFilter = {
+    every?: ViewFilterGroupWhereInput
+    some?: ViewFilterGroupWhereInput
+    none?: ViewFilterGroupWhereInput
+  }
+
+  export type ViewFilterGroupOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ViewCountOrderByAggregateInput = {
     id?: SortOrder
     tableId?: SortOrder
     name?: SortOrder
     position?: SortOrder
     createdAt?: SortOrder
+    filterConjunction?: SortOrder
   }
 
   export type ViewAvgOrderByAggregateInput = {
@@ -19306,6 +20878,7 @@ export namespace Prisma {
     name?: SortOrder
     position?: SortOrder
     createdAt?: SortOrder
+    filterConjunction?: SortOrder
   }
 
   export type ViewMinOrderByAggregateInput = {
@@ -19314,6 +20887,7 @@ export namespace Prisma {
     name?: SortOrder
     position?: SortOrder
     createdAt?: SortOrder
+    filterConjunction?: SortOrder
   }
 
   export type ViewSumOrderByAggregateInput = {
@@ -19348,6 +20922,11 @@ export namespace Prisma {
     isNot?: ViewWhereInput
   }
 
+  export type ViewFilterGroupNullableScalarRelationFilter = {
+    is?: ViewFilterGroupWhereInput | null
+    isNot?: ViewFilterGroupWhereInput | null
+  }
+
   export type FieldNullableScalarRelationFilter = {
     is?: FieldWhereInput | null
     isNot?: FieldWhereInput | null
@@ -19356,23 +20935,37 @@ export namespace Prisma {
   export type ViewFilterCountOrderByAggregateInput = {
     id?: SortOrder
     viewId?: SortOrder
+    groupId?: SortOrder
     fieldId?: SortOrder
     operator?: SortOrder
     value?: SortOrder
+    position?: SortOrder
+  }
+
+  export type ViewFilterAvgOrderByAggregateInput = {
+    position?: SortOrder
   }
 
   export type ViewFilterMaxOrderByAggregateInput = {
     id?: SortOrder
     viewId?: SortOrder
+    groupId?: SortOrder
     fieldId?: SortOrder
     operator?: SortOrder
+    position?: SortOrder
   }
 
   export type ViewFilterMinOrderByAggregateInput = {
     id?: SortOrder
     viewId?: SortOrder
+    groupId?: SortOrder
     fieldId?: SortOrder
     operator?: SortOrder
+    position?: SortOrder
+  }
+
+  export type ViewFilterSumOrderByAggregateInput = {
+    position?: SortOrder
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -19399,6 +20992,65 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedJsonNullableFilter<$PrismaModel>
     _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type ViewFilterGroupCountOrderByAggregateInput = {
+    id?: SortOrder
+    viewId?: SortOrder
+    conjunction?: SortOrder
+    connector?: SortOrder
+    position?: SortOrder
+  }
+
+  export type ViewFilterGroupAvgOrderByAggregateInput = {
+    position?: SortOrder
+  }
+
+  export type ViewFilterGroupMaxOrderByAggregateInput = {
+    id?: SortOrder
+    viewId?: SortOrder
+    conjunction?: SortOrder
+    connector?: SortOrder
+    position?: SortOrder
+  }
+
+  export type ViewFilterGroupMinOrderByAggregateInput = {
+    id?: SortOrder
+    viewId?: SortOrder
+    conjunction?: SortOrder
+    connector?: SortOrder
+    position?: SortOrder
+  }
+
+  export type ViewFilterGroupSumOrderByAggregateInput = {
+    position?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type EnumSortDirectionFilter<$PrismaModel = never> = {
@@ -20245,6 +21897,13 @@ export namespace Prisma {
     connect?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
   }
 
+  export type ViewFilterGroupCreateNestedManyWithoutViewInput = {
+    create?: XOR<ViewFilterGroupCreateWithoutViewInput, ViewFilterGroupUncheckedCreateWithoutViewInput> | ViewFilterGroupCreateWithoutViewInput[] | ViewFilterGroupUncheckedCreateWithoutViewInput[]
+    connectOrCreate?: ViewFilterGroupCreateOrConnectWithoutViewInput | ViewFilterGroupCreateOrConnectWithoutViewInput[]
+    createMany?: ViewFilterGroupCreateManyViewInputEnvelope
+    connect?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+  }
+
   export type ViewSortCreateNestedManyWithoutViewInput = {
     create?: XOR<ViewSortCreateWithoutViewInput, ViewSortUncheckedCreateWithoutViewInput> | ViewSortCreateWithoutViewInput[] | ViewSortUncheckedCreateWithoutViewInput[]
     connectOrCreate?: ViewSortCreateOrConnectWithoutViewInput | ViewSortCreateOrConnectWithoutViewInput[]
@@ -20257,6 +21916,13 @@ export namespace Prisma {
     connectOrCreate?: ViewFilterCreateOrConnectWithoutViewInput | ViewFilterCreateOrConnectWithoutViewInput[]
     createMany?: ViewFilterCreateManyViewInputEnvelope
     connect?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+  }
+
+  export type ViewFilterGroupUncheckedCreateNestedManyWithoutViewInput = {
+    create?: XOR<ViewFilterGroupCreateWithoutViewInput, ViewFilterGroupUncheckedCreateWithoutViewInput> | ViewFilterGroupCreateWithoutViewInput[] | ViewFilterGroupUncheckedCreateWithoutViewInput[]
+    connectOrCreate?: ViewFilterGroupCreateOrConnectWithoutViewInput | ViewFilterGroupCreateOrConnectWithoutViewInput[]
+    createMany?: ViewFilterGroupCreateManyViewInputEnvelope
+    connect?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
   }
 
   export type ViewSortUncheckedCreateNestedManyWithoutViewInput = {
@@ -20288,6 +21954,20 @@ export namespace Prisma {
     deleteMany?: ViewFilterScalarWhereInput | ViewFilterScalarWhereInput[]
   }
 
+  export type ViewFilterGroupUpdateManyWithoutViewNestedInput = {
+    create?: XOR<ViewFilterGroupCreateWithoutViewInput, ViewFilterGroupUncheckedCreateWithoutViewInput> | ViewFilterGroupCreateWithoutViewInput[] | ViewFilterGroupUncheckedCreateWithoutViewInput[]
+    connectOrCreate?: ViewFilterGroupCreateOrConnectWithoutViewInput | ViewFilterGroupCreateOrConnectWithoutViewInput[]
+    upsert?: ViewFilterGroupUpsertWithWhereUniqueWithoutViewInput | ViewFilterGroupUpsertWithWhereUniqueWithoutViewInput[]
+    createMany?: ViewFilterGroupCreateManyViewInputEnvelope
+    set?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+    disconnect?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+    delete?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+    connect?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+    update?: ViewFilterGroupUpdateWithWhereUniqueWithoutViewInput | ViewFilterGroupUpdateWithWhereUniqueWithoutViewInput[]
+    updateMany?: ViewFilterGroupUpdateManyWithWhereWithoutViewInput | ViewFilterGroupUpdateManyWithWhereWithoutViewInput[]
+    deleteMany?: ViewFilterGroupScalarWhereInput | ViewFilterGroupScalarWhereInput[]
+  }
+
   export type ViewSortUpdateManyWithoutViewNestedInput = {
     create?: XOR<ViewSortCreateWithoutViewInput, ViewSortUncheckedCreateWithoutViewInput> | ViewSortCreateWithoutViewInput[] | ViewSortUncheckedCreateWithoutViewInput[]
     connectOrCreate?: ViewSortCreateOrConnectWithoutViewInput | ViewSortCreateOrConnectWithoutViewInput[]
@@ -20316,6 +21996,20 @@ export namespace Prisma {
     deleteMany?: ViewFilterScalarWhereInput | ViewFilterScalarWhereInput[]
   }
 
+  export type ViewFilterGroupUncheckedUpdateManyWithoutViewNestedInput = {
+    create?: XOR<ViewFilterGroupCreateWithoutViewInput, ViewFilterGroupUncheckedCreateWithoutViewInput> | ViewFilterGroupCreateWithoutViewInput[] | ViewFilterGroupUncheckedCreateWithoutViewInput[]
+    connectOrCreate?: ViewFilterGroupCreateOrConnectWithoutViewInput | ViewFilterGroupCreateOrConnectWithoutViewInput[]
+    upsert?: ViewFilterGroupUpsertWithWhereUniqueWithoutViewInput | ViewFilterGroupUpsertWithWhereUniqueWithoutViewInput[]
+    createMany?: ViewFilterGroupCreateManyViewInputEnvelope
+    set?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+    disconnect?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+    delete?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+    connect?: ViewFilterGroupWhereUniqueInput | ViewFilterGroupWhereUniqueInput[]
+    update?: ViewFilterGroupUpdateWithWhereUniqueWithoutViewInput | ViewFilterGroupUpdateWithWhereUniqueWithoutViewInput[]
+    updateMany?: ViewFilterGroupUpdateManyWithWhereWithoutViewInput | ViewFilterGroupUpdateManyWithWhereWithoutViewInput[]
+    deleteMany?: ViewFilterGroupScalarWhereInput | ViewFilterGroupScalarWhereInput[]
+  }
+
   export type ViewSortUncheckedUpdateManyWithoutViewNestedInput = {
     create?: XOR<ViewSortCreateWithoutViewInput, ViewSortUncheckedCreateWithoutViewInput> | ViewSortCreateWithoutViewInput[] | ViewSortUncheckedCreateWithoutViewInput[]
     connectOrCreate?: ViewSortCreateOrConnectWithoutViewInput | ViewSortCreateOrConnectWithoutViewInput[]
@@ -20336,6 +22030,12 @@ export namespace Prisma {
     connect?: ViewWhereUniqueInput
   }
 
+  export type ViewFilterGroupCreateNestedOneWithoutFiltersInput = {
+    create?: XOR<ViewFilterGroupCreateWithoutFiltersInput, ViewFilterGroupUncheckedCreateWithoutFiltersInput>
+    connectOrCreate?: ViewFilterGroupCreateOrConnectWithoutFiltersInput
+    connect?: ViewFilterGroupWhereUniqueInput
+  }
+
   export type FieldCreateNestedOneWithoutViewFiltersInput = {
     create?: XOR<FieldCreateWithoutViewFiltersInput, FieldUncheckedCreateWithoutViewFiltersInput>
     connectOrCreate?: FieldCreateOrConnectWithoutViewFiltersInput
@@ -20350,6 +22050,16 @@ export namespace Prisma {
     update?: XOR<XOR<ViewUpdateToOneWithWhereWithoutFiltersInput, ViewUpdateWithoutFiltersInput>, ViewUncheckedUpdateWithoutFiltersInput>
   }
 
+  export type ViewFilterGroupUpdateOneWithoutFiltersNestedInput = {
+    create?: XOR<ViewFilterGroupCreateWithoutFiltersInput, ViewFilterGroupUncheckedCreateWithoutFiltersInput>
+    connectOrCreate?: ViewFilterGroupCreateOrConnectWithoutFiltersInput
+    upsert?: ViewFilterGroupUpsertWithoutFiltersInput
+    disconnect?: ViewFilterGroupWhereInput | boolean
+    delete?: ViewFilterGroupWhereInput | boolean
+    connect?: ViewFilterGroupWhereUniqueInput
+    update?: XOR<XOR<ViewFilterGroupUpdateToOneWithWhereWithoutFiltersInput, ViewFilterGroupUpdateWithoutFiltersInput>, ViewFilterGroupUncheckedUpdateWithoutFiltersInput>
+  }
+
   export type FieldUpdateOneWithoutViewFiltersNestedInput = {
     create?: XOR<FieldCreateWithoutViewFiltersInput, FieldUncheckedCreateWithoutViewFiltersInput>
     connectOrCreate?: FieldCreateOrConnectWithoutViewFiltersInput
@@ -20358,6 +22068,70 @@ export namespace Prisma {
     delete?: FieldWhereInput | boolean
     connect?: FieldWhereUniqueInput
     update?: XOR<XOR<FieldUpdateToOneWithWhereWithoutViewFiltersInput, FieldUpdateWithoutViewFiltersInput>, FieldUncheckedUpdateWithoutViewFiltersInput>
+  }
+
+  export type ViewCreateNestedOneWithoutFilterGroupsInput = {
+    create?: XOR<ViewCreateWithoutFilterGroupsInput, ViewUncheckedCreateWithoutFilterGroupsInput>
+    connectOrCreate?: ViewCreateOrConnectWithoutFilterGroupsInput
+    connect?: ViewWhereUniqueInput
+  }
+
+  export type ViewFilterCreateNestedManyWithoutGroupInput = {
+    create?: XOR<ViewFilterCreateWithoutGroupInput, ViewFilterUncheckedCreateWithoutGroupInput> | ViewFilterCreateWithoutGroupInput[] | ViewFilterUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: ViewFilterCreateOrConnectWithoutGroupInput | ViewFilterCreateOrConnectWithoutGroupInput[]
+    createMany?: ViewFilterCreateManyGroupInputEnvelope
+    connect?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+  }
+
+  export type ViewFilterUncheckedCreateNestedManyWithoutGroupInput = {
+    create?: XOR<ViewFilterCreateWithoutGroupInput, ViewFilterUncheckedCreateWithoutGroupInput> | ViewFilterCreateWithoutGroupInput[] | ViewFilterUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: ViewFilterCreateOrConnectWithoutGroupInput | ViewFilterCreateOrConnectWithoutGroupInput[]
+    createMany?: ViewFilterCreateManyGroupInputEnvelope
+    connect?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type ViewUpdateOneRequiredWithoutFilterGroupsNestedInput = {
+    create?: XOR<ViewCreateWithoutFilterGroupsInput, ViewUncheckedCreateWithoutFilterGroupsInput>
+    connectOrCreate?: ViewCreateOrConnectWithoutFilterGroupsInput
+    upsert?: ViewUpsertWithoutFilterGroupsInput
+    connect?: ViewWhereUniqueInput
+    update?: XOR<XOR<ViewUpdateToOneWithWhereWithoutFilterGroupsInput, ViewUpdateWithoutFilterGroupsInput>, ViewUncheckedUpdateWithoutFilterGroupsInput>
+  }
+
+  export type ViewFilterUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<ViewFilterCreateWithoutGroupInput, ViewFilterUncheckedCreateWithoutGroupInput> | ViewFilterCreateWithoutGroupInput[] | ViewFilterUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: ViewFilterCreateOrConnectWithoutGroupInput | ViewFilterCreateOrConnectWithoutGroupInput[]
+    upsert?: ViewFilterUpsertWithWhereUniqueWithoutGroupInput | ViewFilterUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: ViewFilterCreateManyGroupInputEnvelope
+    set?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+    disconnect?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+    delete?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+    connect?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+    update?: ViewFilterUpdateWithWhereUniqueWithoutGroupInput | ViewFilterUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: ViewFilterUpdateManyWithWhereWithoutGroupInput | ViewFilterUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: ViewFilterScalarWhereInput | ViewFilterScalarWhereInput[]
+  }
+
+  export type ViewFilterUncheckedUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<ViewFilterCreateWithoutGroupInput, ViewFilterUncheckedCreateWithoutGroupInput> | ViewFilterCreateWithoutGroupInput[] | ViewFilterUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: ViewFilterCreateOrConnectWithoutGroupInput | ViewFilterCreateOrConnectWithoutGroupInput[]
+    upsert?: ViewFilterUpsertWithWhereUniqueWithoutGroupInput | ViewFilterUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: ViewFilterCreateManyGroupInputEnvelope
+    set?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+    disconnect?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+    delete?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+    connect?: ViewFilterWhereUniqueInput | ViewFilterWhereUniqueInput[]
+    update?: ViewFilterUpdateWithWhereUniqueWithoutGroupInput | ViewFilterUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: ViewFilterUpdateManyWithWhereWithoutGroupInput | ViewFilterUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: ViewFilterScalarWhereInput | ViewFilterScalarWhereInput[]
   }
 
   export type ViewCreateNestedOneWithoutSortsInput = {
@@ -20607,6 +22381,33 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedEnumSortDirectionFilter<$PrismaModel = never> = {
@@ -21363,7 +23164,9 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
     filters?: ViewFilterCreateNestedManyWithoutViewInput
+    filterGroups?: ViewFilterGroupCreateNestedManyWithoutViewInput
     sorts?: ViewSortCreateNestedManyWithoutViewInput
   }
 
@@ -21372,7 +23175,9 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
     filters?: ViewFilterUncheckedCreateNestedManyWithoutViewInput
+    filterGroups?: ViewFilterGroupUncheckedCreateNestedManyWithoutViewInput
     sorts?: ViewSortUncheckedCreateNestedManyWithoutViewInput
   }
 
@@ -21518,6 +23323,7 @@ export namespace Prisma {
     name?: StringFilter<"View"> | string
     position?: IntNullableFilter<"View"> | number | null
     createdAt?: DateTimeFilter<"View"> | Date | string
+    filterConjunction?: StringFilter<"View"> | string
   }
 
   export type TableCreateWithoutFieldsInput = {
@@ -21573,14 +23379,18 @@ export namespace Prisma {
     id?: string
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
     view: ViewCreateNestedOneWithoutFiltersInput
+    group?: ViewFilterGroupCreateNestedOneWithoutFiltersInput
   }
 
   export type ViewFilterUncheckedCreateWithoutFieldInput = {
     id?: string
     viewId: string
+    groupId?: string | null
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
   }
 
   export type ViewFilterCreateOrConnectWithoutFieldInput = {
@@ -21698,9 +23508,11 @@ export namespace Prisma {
     NOT?: ViewFilterScalarWhereInput | ViewFilterScalarWhereInput[]
     id?: StringFilter<"ViewFilter"> | string
     viewId?: StringFilter<"ViewFilter"> | string
+    groupId?: StringNullableFilter<"ViewFilter"> | string | null
     fieldId?: StringNullableFilter<"ViewFilter"> | string | null
     operator?: StringFilter<"ViewFilter"> | string
     value?: JsonNullableFilter<"ViewFilter">
+    position?: IntNullableFilter<"ViewFilter"> | number | null
   }
 
   export type ViewSortUpsertWithWhereUniqueWithoutFieldInput = {
@@ -22043,14 +23855,18 @@ export namespace Prisma {
     id?: string
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
+    group?: ViewFilterGroupCreateNestedOneWithoutFiltersInput
     field?: FieldCreateNestedOneWithoutViewFiltersInput
   }
 
   export type ViewFilterUncheckedCreateWithoutViewInput = {
     id?: string
+    groupId?: string | null
     fieldId?: string | null
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
   }
 
   export type ViewFilterCreateOrConnectWithoutViewInput = {
@@ -22060,6 +23876,32 @@ export namespace Prisma {
 
   export type ViewFilterCreateManyViewInputEnvelope = {
     data: ViewFilterCreateManyViewInput | ViewFilterCreateManyViewInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ViewFilterGroupCreateWithoutViewInput = {
+    id?: string
+    conjunction?: string
+    connector?: string
+    position?: number
+    filters?: ViewFilterCreateNestedManyWithoutGroupInput
+  }
+
+  export type ViewFilterGroupUncheckedCreateWithoutViewInput = {
+    id?: string
+    conjunction?: string
+    connector?: string
+    position?: number
+    filters?: ViewFilterUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type ViewFilterGroupCreateOrConnectWithoutViewInput = {
+    where: ViewFilterGroupWhereUniqueInput
+    create: XOR<ViewFilterGroupCreateWithoutViewInput, ViewFilterGroupUncheckedCreateWithoutViewInput>
+  }
+
+  export type ViewFilterGroupCreateManyViewInputEnvelope = {
+    data: ViewFilterGroupCreateManyViewInput | ViewFilterGroupCreateManyViewInput[]
     skipDuplicates?: boolean
   }
 
@@ -22136,6 +23978,33 @@ export namespace Prisma {
     data: XOR<ViewFilterUpdateManyMutationInput, ViewFilterUncheckedUpdateManyWithoutViewInput>
   }
 
+  export type ViewFilterGroupUpsertWithWhereUniqueWithoutViewInput = {
+    where: ViewFilterGroupWhereUniqueInput
+    update: XOR<ViewFilterGroupUpdateWithoutViewInput, ViewFilterGroupUncheckedUpdateWithoutViewInput>
+    create: XOR<ViewFilterGroupCreateWithoutViewInput, ViewFilterGroupUncheckedCreateWithoutViewInput>
+  }
+
+  export type ViewFilterGroupUpdateWithWhereUniqueWithoutViewInput = {
+    where: ViewFilterGroupWhereUniqueInput
+    data: XOR<ViewFilterGroupUpdateWithoutViewInput, ViewFilterGroupUncheckedUpdateWithoutViewInput>
+  }
+
+  export type ViewFilterGroupUpdateManyWithWhereWithoutViewInput = {
+    where: ViewFilterGroupScalarWhereInput
+    data: XOR<ViewFilterGroupUpdateManyMutationInput, ViewFilterGroupUncheckedUpdateManyWithoutViewInput>
+  }
+
+  export type ViewFilterGroupScalarWhereInput = {
+    AND?: ViewFilterGroupScalarWhereInput | ViewFilterGroupScalarWhereInput[]
+    OR?: ViewFilterGroupScalarWhereInput[]
+    NOT?: ViewFilterGroupScalarWhereInput | ViewFilterGroupScalarWhereInput[]
+    id?: StringFilter<"ViewFilterGroup"> | string
+    viewId?: StringFilter<"ViewFilterGroup"> | string
+    conjunction?: StringFilter<"ViewFilterGroup"> | string
+    connector?: StringFilter<"ViewFilterGroup"> | string
+    position?: IntFilter<"ViewFilterGroup"> | number
+  }
+
   export type ViewSortUpsertWithWhereUniqueWithoutViewInput = {
     where: ViewSortWhereUniqueInput
     update: XOR<ViewSortUpdateWithoutViewInput, ViewSortUncheckedUpdateWithoutViewInput>
@@ -22157,7 +24026,9 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
     table: TableCreateNestedOneWithoutViewsInput
+    filterGroups?: ViewFilterGroupCreateNestedManyWithoutViewInput
     sorts?: ViewSortCreateNestedManyWithoutViewInput
   }
 
@@ -22167,12 +24038,35 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
+    filterGroups?: ViewFilterGroupUncheckedCreateNestedManyWithoutViewInput
     sorts?: ViewSortUncheckedCreateNestedManyWithoutViewInput
   }
 
   export type ViewCreateOrConnectWithoutFiltersInput = {
     where: ViewWhereUniqueInput
     create: XOR<ViewCreateWithoutFiltersInput, ViewUncheckedCreateWithoutFiltersInput>
+  }
+
+  export type ViewFilterGroupCreateWithoutFiltersInput = {
+    id?: string
+    conjunction?: string
+    connector?: string
+    position?: number
+    view: ViewCreateNestedOneWithoutFilterGroupsInput
+  }
+
+  export type ViewFilterGroupUncheckedCreateWithoutFiltersInput = {
+    id?: string
+    viewId: string
+    conjunction?: string
+    connector?: string
+    position?: number
+  }
+
+  export type ViewFilterGroupCreateOrConnectWithoutFiltersInput = {
+    where: ViewFilterGroupWhereUniqueInput
+    create: XOR<ViewFilterGroupCreateWithoutFiltersInput, ViewFilterGroupUncheckedCreateWithoutFiltersInput>
   }
 
   export type FieldCreateWithoutViewFiltersInput = {
@@ -22216,7 +24110,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
     table?: TableUpdateOneRequiredWithoutViewsNestedInput
+    filterGroups?: ViewFilterGroupUpdateManyWithoutViewNestedInput
     sorts?: ViewSortUpdateManyWithoutViewNestedInput
   }
 
@@ -22226,7 +24122,36 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
+    filterGroups?: ViewFilterGroupUncheckedUpdateManyWithoutViewNestedInput
     sorts?: ViewSortUncheckedUpdateManyWithoutViewNestedInput
+  }
+
+  export type ViewFilterGroupUpsertWithoutFiltersInput = {
+    update: XOR<ViewFilterGroupUpdateWithoutFiltersInput, ViewFilterGroupUncheckedUpdateWithoutFiltersInput>
+    create: XOR<ViewFilterGroupCreateWithoutFiltersInput, ViewFilterGroupUncheckedCreateWithoutFiltersInput>
+    where?: ViewFilterGroupWhereInput
+  }
+
+  export type ViewFilterGroupUpdateToOneWithWhereWithoutFiltersInput = {
+    where?: ViewFilterGroupWhereInput
+    data: XOR<ViewFilterGroupUpdateWithoutFiltersInput, ViewFilterGroupUncheckedUpdateWithoutFiltersInput>
+  }
+
+  export type ViewFilterGroupUpdateWithoutFiltersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
+    view?: ViewUpdateOneRequiredWithoutFilterGroupsNestedInput
+  }
+
+  export type ViewFilterGroupUncheckedUpdateWithoutFiltersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    viewId?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
   }
 
   export type FieldUpsertWithoutViewFiltersInput = {
@@ -22260,13 +24185,119 @@ export namespace Prisma {
     viewSorts?: ViewSortUncheckedUpdateManyWithoutFieldNestedInput
   }
 
+  export type ViewCreateWithoutFilterGroupsInput = {
+    id?: string
+    name: string
+    position?: number | null
+    createdAt?: Date | string
+    filterConjunction?: string
+    table: TableCreateNestedOneWithoutViewsInput
+    filters?: ViewFilterCreateNestedManyWithoutViewInput
+    sorts?: ViewSortCreateNestedManyWithoutViewInput
+  }
+
+  export type ViewUncheckedCreateWithoutFilterGroupsInput = {
+    id?: string
+    tableId: string
+    name: string
+    position?: number | null
+    createdAt?: Date | string
+    filterConjunction?: string
+    filters?: ViewFilterUncheckedCreateNestedManyWithoutViewInput
+    sorts?: ViewSortUncheckedCreateNestedManyWithoutViewInput
+  }
+
+  export type ViewCreateOrConnectWithoutFilterGroupsInput = {
+    where: ViewWhereUniqueInput
+    create: XOR<ViewCreateWithoutFilterGroupsInput, ViewUncheckedCreateWithoutFilterGroupsInput>
+  }
+
+  export type ViewFilterCreateWithoutGroupInput = {
+    id?: string
+    operator?: string
+    value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
+    view: ViewCreateNestedOneWithoutFiltersInput
+    field?: FieldCreateNestedOneWithoutViewFiltersInput
+  }
+
+  export type ViewFilterUncheckedCreateWithoutGroupInput = {
+    id?: string
+    viewId: string
+    fieldId?: string | null
+    operator?: string
+    value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
+  }
+
+  export type ViewFilterCreateOrConnectWithoutGroupInput = {
+    where: ViewFilterWhereUniqueInput
+    create: XOR<ViewFilterCreateWithoutGroupInput, ViewFilterUncheckedCreateWithoutGroupInput>
+  }
+
+  export type ViewFilterCreateManyGroupInputEnvelope = {
+    data: ViewFilterCreateManyGroupInput | ViewFilterCreateManyGroupInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ViewUpsertWithoutFilterGroupsInput = {
+    update: XOR<ViewUpdateWithoutFilterGroupsInput, ViewUncheckedUpdateWithoutFilterGroupsInput>
+    create: XOR<ViewCreateWithoutFilterGroupsInput, ViewUncheckedCreateWithoutFilterGroupsInput>
+    where?: ViewWhereInput
+  }
+
+  export type ViewUpdateToOneWithWhereWithoutFilterGroupsInput = {
+    where?: ViewWhereInput
+    data: XOR<ViewUpdateWithoutFilterGroupsInput, ViewUncheckedUpdateWithoutFilterGroupsInput>
+  }
+
+  export type ViewUpdateWithoutFilterGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
+    table?: TableUpdateOneRequiredWithoutViewsNestedInput
+    filters?: ViewFilterUpdateManyWithoutViewNestedInput
+    sorts?: ViewSortUpdateManyWithoutViewNestedInput
+  }
+
+  export type ViewUncheckedUpdateWithoutFilterGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tableId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
+    filters?: ViewFilterUncheckedUpdateManyWithoutViewNestedInput
+    sorts?: ViewSortUncheckedUpdateManyWithoutViewNestedInput
+  }
+
+  export type ViewFilterUpsertWithWhereUniqueWithoutGroupInput = {
+    where: ViewFilterWhereUniqueInput
+    update: XOR<ViewFilterUpdateWithoutGroupInput, ViewFilterUncheckedUpdateWithoutGroupInput>
+    create: XOR<ViewFilterCreateWithoutGroupInput, ViewFilterUncheckedCreateWithoutGroupInput>
+  }
+
+  export type ViewFilterUpdateWithWhereUniqueWithoutGroupInput = {
+    where: ViewFilterWhereUniqueInput
+    data: XOR<ViewFilterUpdateWithoutGroupInput, ViewFilterUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type ViewFilterUpdateManyWithWhereWithoutGroupInput = {
+    where: ViewFilterScalarWhereInput
+    data: XOR<ViewFilterUpdateManyMutationInput, ViewFilterUncheckedUpdateManyWithoutGroupInput>
+  }
+
   export type ViewCreateWithoutSortsInput = {
     id?: string
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
     table: TableCreateNestedOneWithoutViewsInput
     filters?: ViewFilterCreateNestedManyWithoutViewInput
+    filterGroups?: ViewFilterGroupCreateNestedManyWithoutViewInput
   }
 
   export type ViewUncheckedCreateWithoutSortsInput = {
@@ -22275,7 +24306,9 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
     filters?: ViewFilterUncheckedCreateNestedManyWithoutViewInput
+    filterGroups?: ViewFilterGroupUncheckedCreateNestedManyWithoutViewInput
   }
 
   export type ViewCreateOrConnectWithoutSortsInput = {
@@ -22324,8 +24357,10 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
     table?: TableUpdateOneRequiredWithoutViewsNestedInput
     filters?: ViewFilterUpdateManyWithoutViewNestedInput
+    filterGroups?: ViewFilterGroupUpdateManyWithoutViewNestedInput
   }
 
   export type ViewUncheckedUpdateWithoutSortsInput = {
@@ -22334,7 +24369,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
     filters?: ViewFilterUncheckedUpdateManyWithoutViewNestedInput
+    filterGroups?: ViewFilterGroupUncheckedUpdateManyWithoutViewNestedInput
   }
 
   export type FieldUpsertWithoutViewSortsInput = {
@@ -22620,6 +24657,7 @@ export namespace Prisma {
     name: string
     position?: number | null
     createdAt?: Date | string
+    filterConjunction?: string
   }
 
   export type FieldUpdateWithoutTableInput = {
@@ -22686,7 +24724,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
     filters?: ViewFilterUpdateManyWithoutViewNestedInput
+    filterGroups?: ViewFilterGroupUpdateManyWithoutViewNestedInput
     sorts?: ViewSortUpdateManyWithoutViewNestedInput
   }
 
@@ -22695,7 +24735,9 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
     filters?: ViewFilterUncheckedUpdateManyWithoutViewNestedInput
+    filterGroups?: ViewFilterGroupUncheckedUpdateManyWithoutViewNestedInput
     sorts?: ViewSortUncheckedUpdateManyWithoutViewNestedInput
   }
 
@@ -22704,6 +24746,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     position?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    filterConjunction?: StringFieldUpdateOperationsInput | string
   }
 
   export type CellValueCreateManyFieldInput = {
@@ -22715,8 +24758,10 @@ export namespace Prisma {
   export type ViewFilterCreateManyFieldInput = {
     id?: string
     viewId: string
+    groupId?: string | null
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
   }
 
   export type ViewSortCreateManyFieldInput = {
@@ -22748,21 +24793,27 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
     view?: ViewUpdateOneRequiredWithoutFiltersNestedInput
+    group?: ViewFilterGroupUpdateOneWithoutFiltersNestedInput
   }
 
   export type ViewFilterUncheckedUpdateWithoutFieldInput = {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewFilterUncheckedUpdateManyWithoutFieldInput = {
     id?: StringFieldUpdateOperationsInput | string
     viewId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewSortUpdateWithoutFieldInput = {
@@ -22812,9 +24863,18 @@ export namespace Prisma {
 
   export type ViewFilterCreateManyViewInput = {
     id?: string
+    groupId?: string | null
     fieldId?: string | null
     operator?: string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
+  }
+
+  export type ViewFilterGroupCreateManyViewInput = {
+    id?: string
+    conjunction?: string
+    connector?: string
+    position?: number
   }
 
   export type ViewSortCreateManyViewInput = {
@@ -22828,21 +24888,50 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    group?: ViewFilterGroupUpdateOneWithoutFiltersNestedInput
     field?: FieldUpdateOneWithoutViewFiltersNestedInput
   }
 
   export type ViewFilterUncheckedUpdateWithoutViewInput = {
     id?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
     fieldId?: NullableStringFieldUpdateOperationsInput | string | null
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ViewFilterUncheckedUpdateManyWithoutViewInput = {
     id?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
     fieldId?: NullableStringFieldUpdateOperationsInput | string | null
     operator?: StringFieldUpdateOperationsInput | string
     value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type ViewFilterGroupUpdateWithoutViewInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
+    filters?: ViewFilterUpdateManyWithoutGroupNestedInput
+  }
+
+  export type ViewFilterGroupUncheckedUpdateWithoutViewInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
+    filters?: ViewFilterUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type ViewFilterGroupUncheckedUpdateManyWithoutViewInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conjunction?: StringFieldUpdateOperationsInput | string
+    connector?: StringFieldUpdateOperationsInput | string
+    position?: IntFieldUpdateOperationsInput | number
   }
 
   export type ViewSortUpdateWithoutViewInput = {
@@ -22864,6 +24953,42 @@ export namespace Prisma {
     fieldId?: StringFieldUpdateOperationsInput | string
     direction?: EnumSortDirectionFieldUpdateOperationsInput | $Enums.SortDirection
     order?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type ViewFilterCreateManyGroupInput = {
+    id?: string
+    viewId: string
+    fieldId?: string | null
+    operator?: string
+    value?: NullableJsonNullValueInput | InputJsonValue
+    position?: number | null
+  }
+
+  export type ViewFilterUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operator?: StringFieldUpdateOperationsInput | string
+    value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+    view?: ViewUpdateOneRequiredWithoutFiltersNestedInput
+    field?: FieldUpdateOneWithoutViewFiltersNestedInput
+  }
+
+  export type ViewFilterUncheckedUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    viewId?: StringFieldUpdateOperationsInput | string
+    fieldId?: NullableStringFieldUpdateOperationsInput | string | null
+    operator?: StringFieldUpdateOperationsInput | string
+    value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type ViewFilterUncheckedUpdateManyWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    viewId?: StringFieldUpdateOperationsInput | string
+    fieldId?: NullableStringFieldUpdateOperationsInput | string | null
+    operator?: StringFieldUpdateOperationsInput | string
+    value?: NullableJsonNullValueInput | InputJsonValue
+    position?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
 

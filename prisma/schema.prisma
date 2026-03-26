@@ -154,27 +154,43 @@ model CellValue {
 }
 
 model View {
-  id        String   @id @default(uuid())
-  tableId   String
-  name      String
-  position  Int?
-  createdAt DateTime @default(now())
+  id                String   @id @default(uuid())
+  tableId           String
+  name              String
+  position          Int?
+  createdAt         DateTime @default(now())
+  filterConjunction String   @default("and")
 
   table Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
 
-  filters ViewFilter[]
-  sorts   ViewSort[]
+  filters      ViewFilter[]
+  filterGroups ViewFilterGroup[]
+  sorts        ViewSort[]
 }
 
 model ViewFilter {
-  id      String  @id @default(uuid())
-  viewId  String
-  fieldId String?
+  id       String  @id @default(uuid())
+  viewId   String
+  groupId  String?
+  fieldId  String?
   operator String  @default("equals")
-  value   Json?
+  value    Json?
+  position Int?
 
-  view  View   @relation(fields: [viewId], references: [id], onDelete: Cascade)
-  field Field? @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  view   View              @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  group  ViewFilterGroup?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  field  Field?            @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+}
+
+model ViewFilterGroup {
+  id          String   @id @default(uuid())
+  viewId      String
+  conjunction String   @default("and")
+  connector   String   @default("and")
+  position    Int      @default(0)
+
+  view    View         @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  filters ViewFilter[]
 }
 
 model ViewSort {

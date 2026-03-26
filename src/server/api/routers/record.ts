@@ -98,27 +98,78 @@ export const recordRouter = createTRPCRouter({
       });
 
       // Load view config if provided
-      let filters: ViewFilter[] = [];
-      let sorts:   { fieldId: string; direction: "asc" | "desc"; order: number }[] = [];
+      let sorts: { fieldId: string; direction: "asc" | "desc"; order: number }[] = [];
+      const filterConditions: Prisma.RecordWhereInput[] = [];
 
       if (viewId) {
         const view = await ctx.db.view.findUnique({
           where: { id: viewId },
           include: {
-            filters: true,
-            sorts:   { orderBy: { order: "asc" } },
+            filters:      { where: { groupId: null } }, // ungrouped (legacy AND)
+            filterGroups: { include: { filters: true }, orderBy: { position: "asc" } },
+            sorts:        { orderBy: { order: "asc" } },
           },
         });
+
         if (view) {
-          filters = view.filters.filter((f) => {
+          function isActive(f: ViewFilter) {
             if (!f.fieldId) return false;
-
-            const noValueNeeded = ["is_empty", "is_not_empty"].includes(f.operator ?? "");
-
-            if (noValueNeeded) return true;
-
+            if (["is_empty", "is_not_empty"].includes(f.operator ?? "")) return true;
             return f.value !== null && f.value !== undefined;
-          });
+          }
+
+          // Build ordered blocks: ungrouped first (always AND), then groups in position order
+          type Block = { cond: Prisma.RecordWhereInput; connector: "and" | "or" };
+          const blocks: Block[] = [];
+
+          // Ungrouped filters — conjunction determined by view.filterConjunction
+          const activeUngrouped = view.filters.filter(isActive);
+          if (activeUngrouped.length > 0) {
+            const conds = activeUngrouped
+              .map((f) => {
+                const field = fields.find((fld) => fld.id === f.fieldId);
+                if (!field) return null;
+                return buildFilterCondition(f, field);
+              })
+              .filter((c): c is Prisma.RecordWhereInput => !!c && Object.keys(c).length > 0);
+            if (conds.length > 0) {
+              const ungroupedCond = (view as { filterConjunction?: string }).filterConjunction === "or"
+                ? { OR: conds } : { AND: conds };
+              blocks.push({ cond: ungroupedCond, connector: "and" });
+            }
+          }
+
+          // Grouped filters — each group has its own connector to items above
+          for (const group of view.filterGroups) {
+            const activeFilters = group.filters.filter(isActive);
+            if (activeFilters.length === 0) continue;
+            const conds = activeFilters
+              .map((f) => {
+                const field = fields.find((fld) => fld.id === f.fieldId);
+                if (!field) return null;
+                return buildFilterCondition(f, field);
+              })
+              .filter((c): c is Prisma.RecordWhereInput => !!c && Object.keys(c).length > 0);
+            if (conds.length === 0) continue;
+            const groupCond = group.conjunction === "or" ? { OR: conds } : { AND: conds };
+            blocks.push({ cond: groupCond, connector: (group.connector ?? "and") as "and" | "or" });
+          }
+
+          // Chain blocks left-to-right respecting connectors
+          if (blocks.length > 0) {
+            let chained = blocks[0]!.cond;
+            for (let i = 1; i < blocks.length; i++) {
+              const { cond, connector } = blocks[i]!;
+              if (connector === "or") {
+                chained = { OR: [chained, cond] };
+              } else if (Array.isArray((chained as { AND?: unknown }).AND)) {
+                chained = { AND: [...(chained as { AND: Prisma.RecordWhereInput[] }).AND, cond] };
+              } else {
+                chained = { AND: [chained, cond] };
+              }
+            }
+            filterConditions.push(chained);
+          }
 
           sorts = view.sorts.map((s) => ({
             fieldId:   s.fieldId,
@@ -130,14 +181,8 @@ export const recordRouter = createTRPCRouter({
 
       const where: Prisma.RecordWhereInput = { tableId };
 
-      if (filters.length > 0) {
-        where.AND = filters
-          .map((f) => {
-            const field = fields.find((fld) => fld.id === f.fieldId);
-            if (!field) return null;
-            return buildFilterCondition(f, field);
-          })
-          .filter((c): c is Prisma.RecordWhereInput => !!c && Object.keys(c).length > 0);
+      if (filterConditions.length > 0) {
+        where.AND = filterConditions;
       }
 
       // Server-side search across text cells
